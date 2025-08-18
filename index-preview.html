@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PerfectPlate – Content Generator (Preview)</title>
+<style>
+  :root{
+    --brand:#4CAF50; --brand-dark:#2e7d32; --chaos:#ff7675; --ink:#222; --muted:#6b7280;
+    --bg:#f6f7fb; --card:#fff; --accent:#e5e7eb; --chip-bg:#eef7f0;
+    --radius-card:14px; --radius-chip:18px; --radius-btn:26px;
+  }
+  *{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+  .app{display:grid;grid-template-columns:280px 1fr 420px;gap:16px;padding:16px;min-height:100vh}
+  header{grid-column:1/-1;background:linear-gradient(135deg,var(--brand),#5ecf71);color:#fff;border-radius:18px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between}
+  header .chips{display:flex;gap:10px;align-items:center}
+  .chip{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);color:#fff;padding:6px 10px;border-radius:16px;font-size:12px;font-weight:600;display:inline-flex;gap:6px;align-items:center}
+  .chip.chaos{background:rgba(255,118,117,.12);border-color:#ff9c9b;color:#fff}
+  .rail,.main,.preview{background:var(--card);border:1px solid var(--accent);border-radius:var(--radius-card)}
+  .rail{padding:16px;position:sticky;top:16px;height:calc(100vh - 32px);overflow:auto}
+  .main{display:flex;flex-direction:column;min-height:70vh}
+  .tabs{display:flex;flex-wrap:wrap;border-bottom:1px solid var(--accent);padding:0 12px}
+  .tab{appearance:none;background:none;border:0;padding:14px 16px;margin:0;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent}
+  .tab.active{color:var(--brand-dark);border-color:var(--brand)}
+  .panel{display:none;padding:16px}
+  .panel.active{display:block}
+  .section{background:#fff;border:1px solid var(--accent);border-radius:12px;padding:14px}
+  .h{margin:0 0 10px 0;font-size:14px;color:#374151;text-transform:uppercase;letter-spacing:.06em}
+  .workflow{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+  .step{border:1px dashed var(--accent);border-radius:12px;padding:12px}
+  .step .title{font-weight:700}
+  .step small{color:var(--muted)}
+  .diet-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px}
+  .diet{border:1px solid var(--accent);border-radius:12px;padding:10px;text-align:center;cursor:pointer}
+  .diet.selected{outline:2px solid var(--brand)}
+  .row{display:flex;gap:12px}
+  .field{flex:1;display:flex;flex-direction:column;gap:6px}
+  input,textarea,select{border:1px solid var(--accent);border-radius:10px;padding:10px 12px;font:inherit;background:#fff}
+  textarea{min-height:120px;resize:vertical}
+  .preview{padding:16px;position:sticky;top:16px;height:calc(100vh - 32px);overflow:auto}
+  .blogcard{border:1px solid var(--accent);border-radius:12px;padding:14px;background:#fff}
+  .meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+  .tag{font-size:12px;background:var(--chip-bg);border:1px solid #cfe8d4;border-radius:14px;padding:4px 8px;color:var(--brand-dark);font-weight:600}
+  .tiktok-clip{border-left:4px solid var(--chaos);padding:8px 12px;background:#fff6f6;border-radius:8px;margin-bottom:10px}
+  .sticky-bar{margin-top:auto;padding:12px;border-top:1px solid var(--accent);display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fff;border-radius:0 0 var(--radius-card) var(--radius-card)}
+  .status{color:var(--muted);font-size:14px}
+  .btn{appearance:none;border:0;border-radius:var(--radius-btn);padding:10px 16px;font-weight:700;cursor:pointer}
+  .btn.primary{background:var(--brand);color:#fff}
+  .btn.ghost{background:#fff;border:1px solid var(--accent);color:#374151}
+  .btn.chaos{background:var(--chaos);color:#fff}
+  .btn[disabled]{opacity:.65;cursor:not-allowed}
+  .copybar{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .copy{font-size:12px;border:1px solid var(--accent);border-radius:14px;padding:6px 10px;background:#fff;cursor:pointer}
+  /* Social content preview styles */
+  .platforms{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+  .platform{border:1px solid var(--accent);background:#fff;border-radius:16px;padding:6px 10px;font-weight:700;color:#374151;cursor:pointer}
+  .platform.active{border-color:var(--brand);color:var(--brand-dark);background:#eef7f0}
+  .counter{font-size:12px;color:var(--muted)}
+  .bucket{border:1px dashed var(--accent);border-radius:10px;padding:10px;margin-top:10px}
+  .bucket h4{margin:0 0 8px 0;font-size:13px;color:#374151}
+  .pill{display:inline-block;background:#f3f4f6;border:1px solid var(--accent);border-radius:16px;padding:4px 8px;font-size:12px;margin:2px}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  @media (max-width:1200px){.app{grid-template-columns:240px 1fr}}
+  @media (max-width:980px){.app{grid-template-columns:1fr;}.preview{position:static;height:auto}}
+</style>
+</head>
+<body>
+<header>
+  <div style="display:flex;align-items:center;gap:12px">
+    <strong>PerfectPlate Content Generator</strong>
+    <span class="chip">Gemini: Connected</span>
+    <span class="chip">Replicate: Optional</span>
+  </div>
+  <div class="chips">
+    <span class="chip chaos">🤖 AI Chaos Mode: Off</span>
+  </div>
+</header>
+
+<div class="app">
+  <aside class="rail">
+    <h3 class="h">Workflow</h3>
+    <ul class="workflow">
+      <li class="step">
+        <div class="title">1) Select Diet</div>
+        <small>Choose a diet to guide ideas</small>
+        <div class="diet-grid">
+          <div class="diet selected">🥑 Keto</div>
+          <div class="diet">🌱 Vegan</div>
+          <div class="diet">🥬 Vegetarian</div>
+          <div class="diet">🌾 Gluten‑Free</div>
+          <div class="diet">🥩 Paleo</div>
+          <div class="diet">🏥 Diabetic‑Friendly</div>
+        </div>
+      </li>
+      <li class="step">
+        <div class="title">2) Generate Ideas</div>
+        <small>Fills the blog form with one recipe concept</small>
+        <button class="btn ghost" style="margin-top:8px">🔄 Generate New Ideas</button>
+      </li>
+      <li class="step">
+        <div class="title">3) Fill Blog Form</div>
+        <small>Edit title, keywords, outline</small>
+      </li>
+      <li class="step">
+        <div class="title">4) Generate Blog Post</div>
+        <small>Creates the full post preview</small>
+      </li>
+      <li class="step">
+        <div class="title">5) Create TikTok (Chaos Mode)</div>
+        <small>Only affects TikTok generation</small>
+      </li>
+    </ul>
+  </aside>
+
+  <main class="main">
+    <div class="tabs">
+      <button class="tab active">Planner</button>
+      <button class="tab">Templates</button>
+      <button class="tab">Recipe Generator</button>
+      <button class="tab">Blog Form</button>
+      <button class="tab">Blog Preview</button>
+      <button class="tab">TikTok Plan</button>
+      <button class="tab">Social Content</button>
+      <button class="tab">Saved</button>
+      <button class="tab">Settings</button>
+    </div>
+
+    <!-- Planner (weekly day cards) -->
+    <section class="panel active">
+      <div class="section">
+        <h3 class="h">Weekly Planner</h3>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+          <div class="step"><div class="title">🌱 Meatless Monday</div><small>Find a vegetarian/vegan spot and one surprising option</small></div>
+          <div class="step"><div class="title">✨ Transformation Tuesday</div><small>Show a menu item you can Perfect It</small></div>
+          <div class="step"><div class="title">🆕 What’s New Wednesday</div><small>New or trending restaurants</small></div>
+          <div class="step"><div class="title">🔄 Throwback Thursday</div><small>All‑time favorite revisited</small></div>
+          <div class="step"><div class="title">⚡ Feature Friday</div><small>App feature / testimonial</small></div>
+          <div class="step"><div class="title">🎉 Success Saturday</div><small>User story or before/after</small></div>
+          <div class="step"><div class="title">📅 Sunday Prep</div><small>Plan meals for next week</small></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Templates gallery -->
+    <section class="panel">
+      <div class="section">
+        <h3 class="h">Templates</h3>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+          <div class="template-card"><h4>🍽️ Restaurant Discovery</h4><p>Find and share a great menu win</p><small>Walkthrough + caption</small></div>
+          <div class="template-card"><h4>🧪 Perfect It</h4><p>Modify a menu item to fit your diet</p><small>Steps + talk track</small></div>
+          <div class="template-card"><h4>🏠 Pantry Meal</h4><p>Make dinner with what you have</p><small>Hook + instructions</small></div>
+          <div class="template-card"><h4>📱 App Feature</h4><p>Short demo of a core feature</p><small>Script + CTA</small></div>
+          <div class="template-card"><h4>⭐ Success Story</h4><p>User story format</p><small>Prompt blocks</small></div>
+          <div class="template-card"><h4>🎯 Diet Spotlight</h4><p>One recipe for a specific diet</p><small>SEO‑ready outline</small></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Recipe Generator intro (separate from Blog form) -->
+    <section class="panel">
+      <div class="section">
+        <h3 class="h">Recipe Generator</h3>
+        <div class="row">
+          <div class="field"><label>Diet</label><select><option>Keto</option><option>Vegan</option><option>Vegetarian</option><option>Gluten‑Free</option><option selected>Paleo</option><option>Diabetic‑Friendly</option></select></div>
+          <div class="field"><label>Style</label><select><option>Weeknight Quick</option><option>Comfort Food</option><option>Restaurant‑Quality</option><option>Fusion</option></select></div>
+        </div>
+        <div class="actions" style="margin-top:10px"><button class="btn ghost">🔄 Generate Ideas</button><button class="btn primary">✨ Generate Full Recipe</button></div>
+      </div>
+    </section>
+
+    <!-- Blog form (existing) -->
+    <section class="panel">
+      <div class="row">
+        <div class="field">
+          <label>Title</label>
+          <input placeholder="A click‑worthy single‑recipe title…" />
+        </div>
+        <div class="field" style="max-width:220px">
+          <label>Diet</label>
+          <select><option>Keto</option><option>Vegan</option><option>Vegetarian</option><option>Gluten‑Free</option><option selected>Paleo</option></select>
+        </div>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <div class="field">
+          <label>Keywords</label>
+          <input placeholder="pork katsu, grain‑free katsu, paleo katsu, umami, crispy pork" />
+        </div>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <div class="field">
+          <label>Outline</label>
+          <textarea placeholder="Intro hook • Ingredient spotlight • Method steps • Chef tips • Nutrition • Serve/Style"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- Blog preview (existing) -->
+    <section class="panel">
+      <div class="section">
+        <h3 class="h">Blog Preview</h3>
+        <div class="blogcard">
+          <div class="meta">
+            <span class="tag">Recipe</span><span class="tag">Paleo</span><span class="tag">Today</span>
+          </div>
+          <h2 style="margin:.2em 0 8px">Crispy Paleo Pork Katsu with Tangy Umami Drizzle</h2>
+          <p style="color:#374151">A shatter‑crisp, grain‑free katsu with real‑world physics and maximum flavor.</p>
+          <div class="copybar">
+            <button class="copy">Copy Title</button>
+            <button class="copy">Copy Body</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TikTok plan (existing) -->
+    <section class="panel">
+      <div class="section">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <h3 class="h">TikTok Plan</h3>
+          <span class="chip chaos">🤖 AI Chaos Mode: On</span>
+        </div>
+        <div style="font-size:14px;color:var(--muted);margin-bottom:10px">6 clips • 30s total • Paleo</div>
+
+        <div class="tiktok-clip">
+          <strong>Clip 1 (0–5s)</strong> • AI flaw: perfect symmetry<br/>
+          Visual: glowing pork loin levitates…<br/>
+          Text overlay: “Pat pork dry. Season generously.”
+        </div>
+        <div class="tiktok-clip">
+          <strong>Clip 2 (5–10s)</strong> • AI flaw: impossible chopping<br/>
+          Visual: floating perfect cubes…<br/>
+          Text overlay: “Prep garnishes. Keep it simple.”
+        </div>
+        <div class="tiktok-clip">
+          <strong>Clip 3 (10–15s)</strong> • AI flaw: neon oil<br/>
+          Visual: electric‑blue oil…<br/>
+          Text overlay: “Shallow fry until golden.”
+        </div>
+
+        <div class="section" style="margin-top:10px">
+          <div style="font-weight:700;margin-bottom:6px">Post Description</div>
+          <p style="margin:0;color:#374151">
+            Crispy paleo katsu, real‑world crunch—zero levitation required. AI’s not good at everything… But it’s GREAT at finding the perfect meal. Download PerfectPlate to find yours.
+          </p>
+          <div class="copybar"><button class="copy">Copy Description</button></div>
+        </div>
+
+        <div class="section" style="margin-top:10px">
+          <div style="font-weight:700;margin-bottom:6px">Hashtags (30)</div>
+          <p style="margin:0;color:#374151;line-height:1.9">
+            #AIFail #AIGoneRogue #RobotChef #AIvsHumans #TechGoneWrong #CookingChaos
+            #PorkKatsu #CrispyKatsu #GrainFree #Paleo #PaleoRecipe #PaleoDinner
+            #LowCarb #HighProtein #Umami #WeeknightDinner #FoodTok #HomeCooking
+            #Recipe #GoodEats #PerfectPlate #PerfectPlateApp #FindYourPerfectMeal
+            #Foodie #PanFried #GlutenFree #CleanEating #MealDiscovery #EatBetter #Delicious
+          </p>
+          <div class="copybar"><button class="copy">Copy Hashtags</button></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Social Content Panel (added) -->
+    <section class="panel">
+      <div class="section">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <h3 class="h">Social Content</h3>
+          <span class="chip chaos">🤖 AI Chaos Mode: Off (only affects TikTok)</span>
+        </div>
+        
+        <div class="section" style="margin-top:8px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <div style="font-weight:700">Platform</div>
+            <span class="counter">Caption + hashtags auto‑tailored per platform</span>
+          </div>
+          <div class="platforms">
+            <button class="platform active" data-p="tiktok">TikTok</button>
+            <button class="platform" data-p="instagram">Instagram</button>
+            <button class="platform" data-p="facebook">Facebook</button>
+            <button class="platform" data-p="shorts">YouTube Shorts</button>
+            <button class="platform" data-p="x">X / Twitter</button>
+            <button class="platform" data-p="pinterest">Pinterest</button>
+          </div>
+        </div>
+
+        <div class="section" style="margin-top:10px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="font-weight:700">Caption</div>
+            <span class="counter" id="capCount">0 / 2200</span>
+          </div>
+          <textarea id="caption" placeholder="Hook + flavorful context + light personality."></textarea>
+          <div class="actions">
+            <button class="copy" id="hook1">Add Hook: Stop‑scroll</button>
+            <button class="copy" id="hook2">Add Hook: Curiosity</button>
+            <button class="copy" id="cta">Append CTA</button>
+            <button class="copy" id="capCopy">Copy Caption</button>
+          </div>
+        </div>
+
+        <div class="section" style="margin-top:10px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="font-weight:700">Hashtag Builder <span class="counter" id="hashCount">0 / 30</span></div>
+            <button class="copy" id="autoFill">Auto‑Fill 30 (Balanced)</button>
+          </div>
+          <div class="bucket">
+            <h4>AI Humor</h4>
+            <div id="b-ai"></div>
+          </div>
+          <div class="bucket">
+            <h4>Recipe & Cooking</h4>
+            <div id="b-recipe"></div>
+          </div>
+          <div class="bucket">
+            <h4>Diet‑Specific</h4>
+            <div id="b-diet"></div>
+          </div>
+          <div class="bucket">
+            <h4>Branded & Discovery</h4>
+            <div id="b-brand"></div>
+          </div>
+          <div class="actions">
+            <button class="copy" id="hashCopy">Copy Hashtags</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Saved (existing) -->
+    <section class="panel">
+      <div class="section">
+        <h3 class="h">Saved</h3>
+        <p style="color:var(--muted)">Your last 20 items will appear here for quick load.</p>
+      </div>
+    </section>
+
+    <!-- Settings/API -->
+    <section class="panel">
+      <div class="section">
+        <h3 class="h">Settings</h3>
+        <div class="row">
+          <div class="field"><label>Gemini API Key</label><input placeholder="sk-… (stored locally)"/></div>
+          <div class="field"><label>Replicate API Key</label><input placeholder="r8_… (optional)"/></div>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <div class="field"><label>Default Diet</label><select><option>Keto</option><option>Vegan</option><option>Vegetarian</option><option>Gluten‑Free</option><option selected>Paleo</option><option>Diabetic‑Friendly</option></select></div>
+          <div class="field"><label>Publish Target</label><select><option>perfectplate-website/blog</option><option>staging</option></select></div>
+        </div>
+        <div class="actions" style="margin-top:10px"><button class="btn primary">💾 Save Settings</button><button class="btn ghost">🧭 Open Website</button></div>
+      </div>
+    </section>
+
+    <div class="sticky-bar">
+      <div class="status">Ready • Changes auto-saved</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn ghost">🔄 Generate Ideas</button>
+        <button class="btn primary">📝 Generate Blog</button>
+        <button class="btn chaos" id="tikbtn">🎬 Generate TikTok</button>
+      </div>
+    </div>
+  </main>
+
+  <aside class="preview">
+    <h3 class="h">Live Preview</h3>
+    <div class="blogcard">
+      <div class="meta">
+        <span class="tag">Recipe</span><span class="tag">Paleo</span><span class="tag">00:00</span>
+      </div>
+      <h2 style="margin:.2em 0 8px">Preview Title</h2>
+      <p style="color:#374151">As you edit the form, this area would live‑update.</p>
+    </div>
+    <div class="section" style="margin-top:12px">
+      <div class="h">Clip Preview</div>
+      <div class="tiktok-clip">
+        <strong>0–5s</strong> Text overlay example, flaw tag, and timing.
+      </div>
+    </div>
+  </aside>
+</div>
+
+<script>
+// lightweight demo interactions (no wiring)
+const tabs=[...document.querySelectorAll('.tab')], panels=[...document.querySelectorAll('.panel')];
+tabs.forEach((t,i)=>t.onclick=()=>{tabs.forEach(x=>x.classList.remove('active')); t.classList.add('active'); panels.forEach(p=>p.classList.remove('active')); panels[i].classList.add('active');});
+document.getElementById('tikbtn').onclick=function(){this.disabled=true;this.textContent='⏳ Generating…';setTimeout(()=>{this.disabled=false;this.textContent='✅ Regenerate'},1200)}
+
+// --- Social preview demo logic (no wiring) ---
+const caption = document.getElementById('caption');
+const capCount = document.getElementById('capCount');
+const CTA = " AI’s not good at everything… But it’s GREAT at finding the perfect meal. Download PerfectPlate to find yours.";
+caption?.addEventListener('input',()=> capCount.textContent = `${caption.value.length} / 2200`);
+document.getElementById('hook1')?.addEventListener('click',()=>{caption.value = `Stop scrolling. This ${'paleo katsu'} actually crunches. ` + caption.value; caption.dispatchEvent(new Event('input'));});
+document.getElementById('hook2')?.addEventListener('click',()=>{caption.value = `What happens when flavor meets physics? ` + caption.value; caption.dispatchEvent(new Event('input'));});
+document.getElementById('cta')?.addEventListener('click',()=>{if(!caption.value.endsWith('find yours.')){caption.value += CTA; caption.dispatchEvent(new Event('input'));}});
+document.getElementById('capCopy')?.addEventListener('click',()=>navigator.clipboard.writeText(caption.value||''));
+
+const buckets={ai:['#AIFail','#AIGoneRogue','#RobotChef','#AIvsHumans','#CookingChaos','#TechGoneWrong'],recipe:['#PorkKatsu','#CrispyKatsu','#PanFried','#Umami','#Recipe','#HomeCooking','#WeeknightDinner','#GoodEats'],diet:['#Paleo','#PaleoRecipe','#GrainFree','#LowCarb','#HighProtein','#GlutenFree'],brand:['#PerfectPlate','#PerfectPlateApp','#FindYourPerfectMeal','#FoodTok','#Foodie','#EatBetter']};
+const els={ai:document.getElementById('b-ai'),recipe:document.getElementById('b-recipe'),diet:document.getElementById('b-diet'),brand:document.getElementById('b-brand')};
+function renderBuckets(){Object.entries(els).forEach(([k,el])=>{el.innerHTML=buckets[k].map(t=>`<span class="pill">${t}</span>`).join(' ');}); updateHashCount();}
+function updateHashCount(){const total=[...buckets.ai,...buckets.recipe,...buckets.diet,...buckets.brand]; document.getElementById('hashCount').textContent=`${total.length} / 30`;}
+renderBuckets();
+document.getElementById('autoFill')?.addEventListener('click',()=>{
+  // Ensure exactly 30 by padding with discovery tags
+  const discovery=['#Delicious','#Tasty','#FoodLovers','#ChefMode','#KitchenTips','#MealDiscovery','#FoodInspo','#NomNom'];
+  let all=[...buckets.ai,...buckets.recipe,...buckets.diet,...buckets.brand];
+  while(all.length<30){all.push(discovery[(all.length)%discovery.length]);}
+  // Re-split roughly across buckets
+  buckets.ai = all.slice(0,7); buckets.recipe = all.slice(7,15); buckets.diet = all.slice(15,23); buckets.brand = all.slice(23,30);
+  renderBuckets();
+});
+document.getElementById('hashCopy')?.addEventListener('click',()=>{
+  const all=[...buckets.ai,...buckets.recipe,...buckets.diet,...buckets.brand];
+  navigator.clipboard.writeText(all.slice(0,30).join(' '));
+});
+document.querySelectorAll('.platform').forEach(btn=>btn.addEventListener('click',()=>{
+  document.querySelectorAll('.platform').forEach(b=>b.classList.remove('active')); btn.classList.add('active');
+}));
+</script>
+</body>
+</html>

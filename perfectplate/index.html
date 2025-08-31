@@ -816,6 +816,7 @@
                     <div class="input-group">
                         <label>Replicate API Key (for image generation):</label>
                         <input type="password" id="replicateApiKey" placeholder="Enter your Replicate API key">
+                        <button type="button" onclick="testReplicateApiKey()" style="margin-left: 10px; padding: 5px 10px; font-size: 12px;">Test API Key</button>
                         <small style="color: #666; font-size: 12px;">Used to generate actual images from your screenshots ($0.003 per image)</small>
                     </div>
 
@@ -1245,5 +1246,79 @@
     <script src="js/recipe-generator.js"></script>
 <script src="js/ai-rogue-generator.js"></script>
 <script src="js/main.js"></script>
+
+    <!-- API Key Persistence -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const geminiApiKeyInput = document.getElementById('geminiApiKey');
+            const replicateApiKeyInput = document.getElementById('replicateApiKey');
+            
+            // Load saved API keys
+            const savedGeminiApiKey = localStorage.getItem('geminiApiKey');
+            const savedReplicateApiKey = localStorage.getItem('replicateApiKey');
+            
+            if (savedGeminiApiKey && geminiApiKeyInput) {
+                geminiApiKeyInput.value = savedGeminiApiKey;
+            }
+            
+            if (savedReplicateApiKey && replicateApiKeyInput) {
+                replicateApiKeyInput.value = savedReplicateApiKey;
+            }
+            
+            // Save API keys when changed
+            if (geminiApiKeyInput) {
+                geminiApiKeyInput.addEventListener('change', function() {
+                    localStorage.setItem('geminiApiKey', this.value);
+                });
+            }
+            
+            if (replicateApiKeyInput) {
+                replicateApiKeyInput.addEventListener('change', function() {
+                    localStorage.setItem('replicateApiKey', this.value);
+                });
+            }
+        });
+
+        // Test Replicate API Key function
+        async function testReplicateApiKey() {
+            const apiKey = document.getElementById('replicateApiKey').value;
+            if (!apiKey) {
+                alert('Please enter a Replicate API key first');
+                return;
+            }
+
+            try {
+                console.log('🧪 Testing Replicate API key...');
+                
+                const response = await fetch('https://api.replicate.com/v1/predictions', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Token ${apiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        version: "131d9e185621b4b4d349fd262e363420a6f74081d8c27966c9c5bcf120fa3985",
+                        input: {
+                            prompt: "test image of a red apple",
+                            num_outputs: 1
+                        }
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('✅ Replicate API key is valid!', result);
+                    alert('✅ Replicate API key is working! Prediction ID: ' + result.id);
+                } else {
+                    const errorText = await response.text();
+                    console.error('❌ Replicate API Error:', errorText);
+                    alert('❌ API key test failed: ' + response.status + ' - ' + errorText);
+                }
+            } catch (error) {
+                console.error('❌ Test error:', error);
+                alert('❌ Test failed: ' + error.message);
+            }
+        }
+    </script>
 </body>
 </html> 

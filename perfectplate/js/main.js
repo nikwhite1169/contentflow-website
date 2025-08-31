@@ -315,11 +315,11 @@ async function extractAndGenerateImages(content, postTitle) {
     // Debug: Show that function is being called
     console.log('🔍 extractAndGenerateImages called with:', { postTitle, contentLength: content.length });
     
-    // VISIBLE DEBUG - This should show up!
-    const debugElement = document.createElement('div');
-    debugElement.style.cssText = 'position: fixed; top: 10px; right: 10px; background: red; color: white; padding: 10px; z-index: 9999; border-radius: 5px; max-width: 300px; font-size: 12px;';
-    debugElement.innerHTML = '🎯 MAIN.JS: extractAndGenerateImages started!';
-    document.body.appendChild(debugElement);
+    // Create elegant progress indicator
+    const progressElement = document.createElement('div');
+    progressElement.style.cssText = 'position: fixed; top: 20px; right: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 20px; z-index: 9999; border-radius: 12px; max-width: 320px; font-size: 13px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); backdrop-filter: blur(10px);';
+    progressElement.innerHTML = '🎨 <strong>Generating AI Images...</strong>';
+    document.body.appendChild(progressElement);
     
     if (window.Utils) {
         window.Utils.showSuccess('🔍 Starting image generation process...');
@@ -329,7 +329,7 @@ async function extractAndGenerateImages(content, postTitle) {
     const replicateApiKey = document.getElementById('replicateApiKey')?.value;
     if (!replicateApiKey) {
         console.warn('Replicate API key not found. Images will not be generated.');
-        debugElement.innerHTML += '<br>❌ NO API KEY FOUND!';
+        progressElement.innerHTML = '❌ <strong>API Key Required</strong><br><small>Please add your Replicate API key</small>';
         if (window.Utils) {
             window.Utils.showError('⚠️ Replicate API key required for image generation. Please add it in the Social Media tab.');
         }
@@ -339,9 +339,7 @@ async function extractAndGenerateImages(content, postTitle) {
         };
     }
     
-    debugElement.innerHTML += '<br>✅ API Key found (length: ' + replicateApiKey.length + ')';
-    debugElement.innerHTML += '<br>🔑 Key format: ' + (replicateApiKey.startsWith('r8_') ? 'VALID' : 'INVALID - should start with r8_');
-    debugElement.innerHTML += '<br>🔑 Key preview: ' + replicateApiKey.substring(0, 8) + '...';
+    progressElement.innerHTML = '✅ <strong>API Key Validated</strong><br><small>Preparing image generation...</small>';
     
     // Clean up any old RECIPE_IMAGE_SEARCH placeholders first
     if (content.includes('[RECIPE_IMAGE_SEARCH:')) {
@@ -354,11 +352,11 @@ async function extractAndGenerateImages(content, postTitle) {
     const imagePattern = /\[IMAGE:\s*([^\]]+)\]/g;
     const matches = [...content.matchAll(imagePattern)];
     
-    debugElement.innerHTML += '<br>🔍 Found ' + matches.length + ' [IMAGE: ...] placeholders';
+    progressElement.innerHTML = `🔍 <strong>Found ${matches.length} Images</strong><br><small>Starting AI generation...</small>`;
     
     if (matches.length === 0) {
         console.log('No image placeholders found in content');
-        debugElement.innerHTML += '<br>❌ NO IMAGE PLACEHOLDERS - AI did not include [IMAGE: ...] tags';
+        progressElement.innerHTML = '❌ <strong>No Images Found</strong><br><small>Blog post has no image placeholders</small>';
         if (window.Utils) {
             window.Utils.showError('⚠️ No [IMAGE: ...] placeholders found in generated content. Images may not be included in the blog template.');
         }
@@ -369,7 +367,7 @@ async function extractAndGenerateImages(content, postTitle) {
     }
     
     console.log(`🎨 Found ${matches.length} image placeholders, generating with Replicate AI...`);
-    debugElement.innerHTML += '<br>🎨 Starting API calls for ' + matches.length + ' images...';
+    progressElement.innerHTML = `🎨 <strong>Generating ${matches.length} Images</strong><br><small>Creating beautiful food photos...</small>`;
     
     if (window.Utils) {
         window.Utils.showSuccess(`🎨 Generating ${matches.length} AI images for your recipe...`);
@@ -404,13 +402,7 @@ async function extractAndGenerateImages(content, postTitle) {
             };
             
             console.log(`🎨 Generating image ${imageIndex}: ${description}`);
-            debugElement.innerHTML += '<br>📸 Image ' + imageIndex + ': ' + description.substring(0, 30) + '...';
-            
-            // Call Replicate API directly
-            debugElement.innerHTML += '<br>🌐 Calling Replicate API for image ' + imageIndex + '...';
-            
-            // Use backend server (Render) as CORS proxy - this was working before!
-            debugElement.innerHTML += '<br>🔄 Using backend server proxy...';
+            progressElement.innerHTML = `🎨 <strong>Image ${imageIndex}/${matches.length}</strong><br><small>${description.substring(0, 40)}...</small>`;
             
             // Try your Render backend URL first
             const backendUrl = 'https://perfectplate-backend.onrender.com'; // Replace with your actual Render URL
@@ -427,33 +419,29 @@ async function extractAndGenerateImages(content, postTitle) {
                 })
             });
             
-            debugElement.innerHTML += '<br>📡 Backend Response: ' + response.status;
+            // Backend response logged to console only
             
             if (!response.ok) {
                 const errorText = await response.text();
                 console.error('❌ Replicate API Error:', errorText);
-                debugElement.innerHTML += '<br>❌ API Error ' + imageIndex + ': ' + response.status;
+                progressElement.innerHTML = `❌ <strong>Error Image ${imageIndex}</strong><br><small>API returned ${response.status}</small>`;
                 throw new Error(`Replicate API error: ${response.status}`);
             }
             
             const prediction = await response.json();
             console.log(`📤 Image ${imageIndex} generation started:`, prediction.id);
-            debugElement.innerHTML += '<br>✅ API Success ' + imageIndex + ': ' + prediction.id;
-            
-            // Poll for completion using backend
-            debugElement.innerHTML += '<br>⏳ Starting polling for prediction: ' + prediction.id;
+            progressElement.innerHTML = `⏳ <strong>Processing Image ${imageIndex}</strong><br><small>Waiting for AI to finish...</small>`;
             
             let result = null;
             if (window.Utils && window.Utils.pollReplicatePrediction) {
-                debugElement.innerHTML += '<br>🔄 Calling polling function...';
                 
                 // Poll for completion using backend (FIXED!)
                 try {
                     result = await window.Utils.pollReplicatePrediction(prediction.id, replicateApiKey);
                     console.log(`🔍 Debug - Full result for image ${imageIndex}:`, result);
-                    debugElement.innerHTML += '<br>🖼️ Polling completed: ' + (result ? result.status || 'success' : 'failed');
+                    progressElement.innerHTML = `✅ <strong>Image ${imageIndex} Complete</strong><br><small>Processing next image...</small>`;
                 } catch (pollError) {
-                    debugElement.innerHTML += '<br>❌ Polling error: ' + pollError.message;
+                    progressElement.innerHTML = `❌ <strong>Image ${imageIndex} Failed</strong><br><small>${pollError.message}</small>`;
                     console.error('Polling error:', pollError);
                     // Use placeholder as fallback
                     const foodPlaceholders = [
@@ -464,10 +452,10 @@ async function extractAndGenerateImages(content, postTitle) {
                         'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&h=600&fit=crop'
                     ];
                     result = [foodPlaceholders[imageIndex % foodPlaceholders.length]];
-                    debugElement.innerHTML += '<br>🖼️ Using fallback placeholder';
+                    // Fallback placeholder used
                 }
             } else {
-                debugElement.innerHTML += '<br>❌ Polling function not available';
+                progressElement.innerHTML = `❌ <strong>System Error</strong><br><small>Polling function unavailable</small>`;
                 throw new Error('Polling function not available');
             }
             
@@ -558,7 +546,7 @@ async function extractAndGenerateImages(content, postTitle) {
             console.error('🔍 Debug - Full error details:', error);
             console.error('🔍 Debug - Error stack:', error.stack);
             
-            debugElement.innerHTML += '<br>💥 CATCH ERROR ' + imageIndex + ': ' + error.message;
+            progressElement.innerHTML = `💥 <strong>Error Image ${imageIndex}</strong><br><small>${error.message}</small>`;
             
             // Remove placeholder if image generation failed
             updatedContent = updatedContent.replace(placeholder, '');
@@ -581,6 +569,14 @@ async function extractAndGenerateImages(content, postTitle) {
     
     console.log('🔍 Debug - Final updated content length:', updatedContent.length);
     console.log('🔍 Debug - Generated images count:', imageUrls.length);
+    
+    // Show completion and auto-remove progress indicator
+    progressElement.innerHTML = `🎉 <strong>Complete!</strong><br><small>Generated ${imageUrls.length} images</small>`;
+    setTimeout(() => {
+        if (progressElement.parentNode) {
+            progressElement.remove();
+        }
+    }, 3000);
     
     return {
         images: imageUrls,

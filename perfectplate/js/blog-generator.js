@@ -481,7 +481,7 @@ Do NOT use any other category names. Your response MUST use "${category.category
 
 REQUIREMENTS:
 - Create a completely unique, never-seen-before blog post idea
-- Generate a compelling title that's SEO-friendly and attention-grabbing
+- Generate varied, enticing titles that avoid repetitive patterns like "Recipe Name: A Diet Word"
 - Create 8-12 unique content points to cover
 - Generate relevant keywords beyond the base ones
 - Make it valuable and actionable for readers
@@ -495,7 +495,7 @@ SEASONAL AWARENESS:
 - If you do reference seasons/months, make sure they match the current date context above
 
 OUTPUT FORMAT:
-TITLE: [Unique, compelling title]
+TITLE: [Varied, enticing title - mix up your approach: technique-focused, flavor-focused, benefit-focused, or story-driven]
 KEYWORDS: [8-10 SEO-optimized long-tail keywords (2-4 words each), comma-separated. Focus on specific phrases people search for, not single generic words. Examples: "keto dining out", "low carb restaurant guide", "diabetic-friendly meal planning"]
 TONE: [Choose one: friendly, professional, informative, casual, authoritative, conversational - pick the best tone for this specific topic and audience]
 LENGTH: [Choose one: short (800-1200 words), medium (1200-1800 words), long (1800-2500 words) - based on topic complexity and user value]

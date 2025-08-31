@@ -401,7 +401,7 @@ function displayAIRogueContent(rogueData, recipeTitle) {
                                 </span>
                             </div>
                             <div style="font-style: italic; color: #2d3436; line-height: 1.4; margin-bottom: 10px;">
-                                "${clip.visualPrompt}"
+                                ${clip.visualPrompt?.replace(/['"]/g, '') || clip.visualPrompt}
                             </div>
                             ${clip.textOverlay ? `
                                 <div style="background: rgba(0,0,0,0.8); color: white; padding: 8px 12px; border-radius: 6px; margin-top: 8px;">
@@ -533,7 +533,20 @@ function copyAIRogueContent(type) {
             textToCopy = rogueData.hashtags?.join(' ') || '';
             break;
         case 'voiceover':
-            textToCopy = rogueData.editingInstructions?.voiceoverScript || '';
+            let voiceoverText = rogueData.editingInstructions?.voiceoverScript || '';
+            // Remove ALL time markers and clean up text
+            textToCopy = voiceoverText
+                .replace(/\[\d+:\d+[-–]\d+:\d+\]/g, '') // Remove [0:00-0:05] format
+                .replace(/\(\d+[-–]\d+s?\)/g, '') // Remove (0-5s) format
+                .replace(/\[\d+[-–]\d+s?\]/g, '') // Remove [0-5s] format
+                .replace(/\(\d+s?\)/g, '') // Remove (5s) format
+                .replace(/\[\d+s?\]/g, '') // Remove [5s] format
+                .replace(/\d+:\d+[-–]\d+:\d+/g, '') // Remove bare 0:00-0:05 format
+                .replace(/\d+[-–]\d+s?\b/g, '') // Remove bare 0-5s format
+                .replace(/Clip \d+\s*\(\d+s?\):/gi, 'Clip:') // Remove "Clip 1 (5s):" format
+                .replace(/Clip \d+:/gi, 'Clip:') // Remove "Clip 1:" format
+                .replace(/\s+/g, ' ') // Clean up extra spaces
+                .trim();
             break;
         default:
             alert('Unknown content type');
@@ -542,21 +555,14 @@ function copyAIRogueContent(type) {
 
     if (textToCopy) {
         navigator.clipboard.writeText(textToCopy).then(() => {
-            // Show success feedback with AI theme
-            const button = event.target;
-            const originalText = button.textContent;
-            button.textContent = '🤖 COPIED!';
-            button.style.background = 'linear-gradient(45deg, #00b894, #00cec9)';
-            setTimeout(() => {
-                button.textContent = originalText;
-                button.style.background = '';
-            }, 2000);
+            console.log('✅ AI Rogue content copied to clipboard:', type);
+            alert('🤖 Copied to clipboard!');
         }).catch(err => {
             console.error('Failed to copy text: ', err);
-            alert('Failed to copy to clipboard - even the AI is failing!');
+            alert('Failed to copy to clipboard');
         });
     } else {
-        alert('No content available to copy - the AI is taking a break');
+        alert('No content available to copy');
     }
 }
 

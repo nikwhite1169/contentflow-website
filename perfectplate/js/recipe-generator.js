@@ -300,12 +300,11 @@ DIET: ${dietInfo.name} (${dietInfo.description})
 
 Create an inspiring blog post idea for ONE creative ${diet} recipe. Think beyond basic dishes - create something that will excite readers and make them want to cook immediately.
 
-TITLE PATTERN EXAMPLES (use variety, don't copy exactly):
-- "[Cooking Method] [Protein/Main] with [Flavor Profile]" → "Pan-Seared Salmon with Miso Glaze"
-- "[Texture] [Main Ingredient] [Preparation]" → "Crispy-Skinned Duck Breast"
-- "[Spice/Herb] [Cooking Method] [Protein]" → "Rosemary-Crusted Lamb Chops"
-- "[Cultural Fusion] [Main Dish]" → "Korean-Style Braised Short Ribs"
-- "[Unique Ingredient] [Traditional Dish]" → "Miso-Butter Roasted Vegetables"
+TITLE INSPIRATION (create varied, enticing titles):
+- Mix up your approach: technique-focused, flavor-focused, benefit-focused, or story-driven
+- Use evocative, appetizing language that makes people want to cook
+- Avoid repetitive patterns like "Recipe Name: A Diet Word" every single time
+- Think like a food blogger creating click-worthy titles that vary in style
 
 RECIPE INSPIRATION TYPES (choose one approach):
 - Quick 20-minute ${diet} weeknight dinner
@@ -319,14 +318,10 @@ RECIPE INSPIRATION TYPES (choose one approach):
 - Traditional ${diet} recipe with modern presentation
 - Creative use of trending ${diet} ingredients
 
-TITLE REQUIREMENTS:
-- Make it appetizing and click-worthy
-- Include sensory words (crispy, creamy, smoky, etc.)
-- Avoid generic words like "easy" or "simple"
-- Focus on what makes the dish special
-- AVOID repetitive patterns and formulaic endings
-- NO overused words like "Delight", "Perfect", "Ultimate", "Amazing"
-- Create unique, memorable titles that stand out from other recipes
+TITLE APPROACH:
+- Create varied, enticing blog titles that make people excited to cook
+- Mix up your style: sometimes technique ("The Secret to..."), sometimes flavor ("Bold Spicy..."), sometimes benefit ("Quick 20-Minute..."), sometimes story ("Why This Recipe...")
+- Avoid repetitive colon patterns and subtitle formats
 
 RECIPE SHOULD FEATURE:
 - Interesting cooking techniques or flavor combinations (appropriate for skill level)
@@ -336,7 +331,7 @@ RECIPE SHOULD FEATURE:
 - Instagram-worthy presentation potential
 
 Format your response as:
-TITLE: [Creative, appetizing title that makes people hungry]
+TITLE: [Varied, enticing title - mix up your approach each time]
 KEYWORDS: [8-10 specific SEO keywords including cooking techniques, ingredients, and ${diet} terms]
 OUTLINE: [Detailed outline covering: recipe story/inspiration, ingredient spotlight, step-by-step cooking method breakdown, chef's tips for perfection, nutritional analysis for ${diet}, styling and serving suggestions, and subtle mention of PerfectPlate's custom recipe features when relevant]
 
@@ -352,16 +347,10 @@ Create something delicious and inspiring - avoid basic sheet pan or one-pot reci
                     parts: [{
                         text: `${prompt}
 
-TITLE RULES (STRICT):
-- Must include the concrete recipe name (e.g., "herb-crusted chicken", "spiced lentil curry")
-- 6–12 words, click-worthy, enticing, NO listicles or collections
-- BANNED words: Collection, Roundup, Guide, Compilation, Delight, Perfect, Ultimate, Amazing, Best, Easy, Simple
-- AVOID formulaic patterns like "[Adjective] [Protein] with [Side]: A [Diet] [Generic Word]"
-- USE varied structures: focus on cooking method, flavor profile, texture, or unique ingredient
-- EXAMPLES of good variety: "Smoky Paprika Chicken Thighs", "Coconut-Braised Short Ribs", "Herb-Crusted Salmon Fillets", "Spiced Cauliflower Steaks"
+After creating your recipe content, generate an enticing blog title that will make readers excited to try this recipe. Mix up your approach - sometimes highlight the technique, sometimes the flavors, sometimes the benefits. Avoid using the same "Recipe: A Diet Word" pattern repeatedly.
 
 OUTPUT FORMAT (exactly these 3 lines):
-TITLE: <your title>
+TITLE: <your natural, appropriate title>
 KEYWORDS: <csv keywords>
 OUTLINE: <outline text>
 `
@@ -501,7 +490,7 @@ async function generateDynamicRecipeContent(diet) {
             'quickly sautéed with fresh herbs',
             'simply roasted with minimal prep',
             'tossed together in one pan',
-            'lightly pan-fried for crispy texture',
+            'lightly pan-fried for golden texture',
             // Medium Methods
             'slow-cooked and deeply flavorful',
             'quick seared and finished in the oven', 
@@ -536,29 +525,19 @@ async function generateDynamicRecipeContent(diet) {
             difficultyLevel = 'Beginner-Intermediate';
         }
 
-        // Add ingredient diversity suggestions to prevent repetition
-        const proteinOptions = {
-            'paleo': ['grass-fed beef', 'free-range chicken', 'wild-caught fish', 'pork tenderloin', 'lamb', 'turkey', 'duck', 'game meat'],
-            'keto': ['fatty fish', 'ribeye steak', 'chicken thighs', 'pork belly', 'eggs', 'cheese', 'avocado'],
-            'vegan': ['lentils', 'chickpeas', 'tofu', 'tempeh', 'quinoa', 'black beans', 'nuts', 'seeds'],
-            'vegetarian': ['eggs', 'cheese', 'beans', 'lentils', 'quinoa', 'tofu', 'nuts'],
-            'gluten-free': ['rice', 'quinoa', 'fish', 'chicken', 'vegetables', 'legumes'],
-            'mediterranean': ['fish', 'olive oil', 'legumes', 'nuts', 'cheese']
-        };
-
-        const vegetableOptions = {
-            'paleo': ['broccoli', 'cauliflower', 'zucchini', 'bell peppers', 'mushrooms', 'spinach', 'kale', 'Brussels sprouts', 'cabbage', 'carrots'],
-            'keto': ['spinach', 'broccoli', 'cauliflower', 'zucchini', 'bell peppers', 'mushrooms', 'arugula', 'cabbage'],
-            'vegan': ['eggplant', 'tomatoes', 'bell peppers', 'onions', 'garlic', 'mushrooms', 'leafy greens', 'root vegetables'],
-            'vegetarian': ['tomatoes', 'peppers', 'onions', 'mushrooms', 'spinach', 'zucchini', 'eggplant'],
-            'gluten-free': ['any fresh vegetables', 'herbs', 'peppers', 'onions', 'tomatoes'],
-            'mediterranean': ['tomatoes', 'olives', 'peppers', 'eggplant', 'zucchini', 'herbs']
-        };
-
-        const randomProtein = proteinOptions[diet] ? proteinOptions[diet][Math.floor(Math.random() * proteinOptions[diet].length)] : 'protein of choice';
-        const randomVegetable = vegetableOptions[diet] ? vegetableOptions[diet][Math.floor(Math.random() * vegetableOptions[diet].length)] : 'seasonal vegetables';
+        // Let AI choose ingredients completely freely - no hardcoded options
 
         const prompt = `Create an inspiring and delicious ${diet} recipe that's a ${randomComplexity}. Make it ${randomMethod}.
+
+TITLE REQUIREMENTS: Create a title using ONLY ONE of these exact formats (choose randomly):
+1. "The Secret to [cooking technique/result]"
+2. "Bold [flavor description] [main ingredient]"  
+3. "Quick [time] [dish name]"
+4. "Why This [ingredient/dish] Works"
+5. "Perfect [cooking method] [main ingredient]"
+6. "Simple [main ingredient] with [flavor profile]"
+
+ABSOLUTELY FORBIDDEN: Any title containing colons (:), "Paradise", "Powerhouse", "Delight", "Adventure", "Escape", "Obsession", or "A [Diet] [Word]" patterns.
 
 RECIPE REQUIREMENTS:
 - Follow ${dietDescriptions[diet]} diet principles strictly
@@ -572,26 +551,20 @@ RECIPE REQUIREMENTS:
 CREATIVITY GUIDELINES:
 - Incorporate interesting flavor combinations or techniques
 - Use herbs, spices, and aromatics generously
-- Include texture contrasts (crispy, creamy, tender, etc.)
+- Include texture contrasts (seared, silky, tender, charred, etc.)
 - Consider umami elements and flavor layering
 - Make it Instagram-worthy and delicious
 - Avoid generic "sheet pan" or "one-pot" recipes unless specifically interesting
 
-INGREDIENT INSPIRATION (use as starting point, not requirement):
-- Consider featuring: ${randomProtein} and ${randomVegetable}
-- But feel free to use completely different ingredients that work better for your creative vision
-- Focus on seasonal, fresh ingredients that complement each other
+INGREDIENT CREATIVITY:
+- Choose ingredients based on flavor harmony, seasonality, and what creates the most delicious recipe
+- Be creative and surprising - avoid repetitive or predictable combinations
+- Think like a chef creating a signature dish - what ingredients would make this truly special?
+- Consider texture contrasts, color variety, and complementary flavors
 
 Format:
-TITLE: [Creative, appetizing recipe name that avoids clichés like "Delight", "Perfect", "Ultimate"] - ${diet.charAt(0).toUpperCase() + diet.slice(1)} Recipe
-KEYWORDS: ${diet} recipe, ${diet} cooking, gourmet ${diet} meal, ${diet} cuisine
-
-TITLE CREATIVITY GUIDELINES:
-- Focus on the main cooking technique (braised, seared, roasted, grilled)
-- Highlight unique flavor combinations (honey-miso, lemon-thyme, chili-lime)
-- Emphasize texture contrasts (crispy, creamy, tender, crunchy)
-- Use specific ingredient names rather than generic terms
-- Avoid overused recipe words and formulaic patterns
+TITLE: [Must use one of the 6 approved formats above - NO other patterns allowed]
+KEYWORDS: recipe, cooking, gourmet meal, delicious food
 
 RECIPE CONTENT:
 **[Recipe Name]**
@@ -712,7 +685,7 @@ Generate a creative, flavorful recipe now:`;
         }
         
         // Additional check for overused words in titles
-        const overusedWords = ['delight', 'perfect', 'ultimate', 'amazing', 'best', 'easy', 'simple'];
+        const overusedWords = ['delight', 'paradise', 'powerhouse', 'adventure', 'escape', 'obsession', 'perfect', 'ultimate', 'amazing', 'best'];
         const titleLower = title.toLowerCase();
         if (overusedWords.some(word => titleLower.includes(word))) {
             console.warn('⚠️ Title contains overused words, but keeping AI-generated title:', title);
@@ -1150,7 +1123,7 @@ function displayTikTokContent(tiktokData, recipeTitle) {
                     ${tiktokData.videoClips?.map(clip => `
                         <div style="margin-bottom: 15px; padding: 12px; background: #f1f1f1; border-radius: 6px; border-left: 4px solid #fe2c55;">
                             <strong>Clip ${clip.clipNumber} (${clip.timing}):</strong><br>
-                            <em style="color: #666;">${clip.visualPrompt}</em>
+                            <em style="color: #666;">${clip.visualPrompt?.replace(/['"]/g, '') || clip.visualPrompt}</em>
                         </div>
                     `).join('') || '<p>No video clips generated</p>'}
                 </div>
@@ -1258,7 +1231,14 @@ function copyTikTokContent(type) {
             textToCopy = tiktokData.hashtags?.join(' ') || '';
             break;
         case 'voiceover':
-            textToCopy = tiktokData.editingInstructions?.voiceoverScript || '';
+            let voiceoverText = tiktokData.editingInstructions?.voiceoverScript || '';
+            // Remove time markers like [0:00-0:05], (0-5s), etc.
+            textToCopy = voiceoverText
+                .replace(/\[\d+:\d+[-–]\d+:\d+\]/g, '') // Remove [0:00-0:05] format
+                .replace(/\(\d+[-–]\d+s?\)/g, '') // Remove (0-5s) format
+                .replace(/\[\d+[-–]\d+s?\]/g, '') // Remove [0-5s] format
+                .replace(/\s+/g, ' ') // Clean up extra spaces
+                .trim();
             break;
         default:
             alert('Unknown content type');
@@ -1267,15 +1247,8 @@ function copyTikTokContent(type) {
 
     if (textToCopy) {
         navigator.clipboard.writeText(textToCopy).then(() => {
-            // Show success feedback
-            const button = event.target;
-            const originalText = button.textContent;
-            button.textContent = '✅ Copied!';
-            button.style.background = '#28a745';
-            setTimeout(() => {
-                button.textContent = originalText;
-                button.style.background = '';
-            }, 2000);
+            console.log('✅ Copied to clipboard:', type);
+            alert('✅ Copied to clipboard!');
         }).catch(err => {
             console.error('Failed to copy text: ', err);
             alert('Failed to copy to clipboard');
@@ -1517,9 +1490,9 @@ window.generateTikTokForCurrentRecipe = async function() {
             saveRecipeWithTikTok(blogContent.title, blogContent, rogueContent);
             
             console.log('✅ AI Rogue content generated manually');
-            alert('🤖 AI Rogue content generated! Scroll down to see the chaotic video prompts and deadpan commentary.');
+            console.log('🤖 AI Rogue content generated successfully');
         } else {
-            alert('❌ Failed to generate AI Rogue content. The AI refuses to cooperate.');
+            console.log('❌ Failed to generate AI Rogue content');
         }
     } else {
         // Normal TikTok content generation
@@ -1551,9 +1524,9 @@ window.generateTikTokForCurrentRecipe = async function() {
             saveRecipeWithTikTok(blogContent.title, blogContent, tiktokContent);
             
             console.log('✅ TikTok content generated manually');
-            alert('🎬 TikTok content generated! Scroll down to see the video prompts and editing instructions.');
+            console.log('🎬 TikTok content generated successfully');
         } else {
-            alert('❌ Failed to generate TikTok content. Please check your API key and try again.');
+            console.log('❌ Failed to generate TikTok content');
         }
     }
     

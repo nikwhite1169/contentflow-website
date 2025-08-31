@@ -447,17 +447,25 @@ async function extractAndGenerateImages(content, postTitle) {
             if (window.Utils && window.Utils.pollReplicatePrediction) {
                 debugElement.innerHTML += '<br>🔄 Calling polling function...';
                 
-                // TEMPORARY: Skip polling and use placeholder images
-                // The images are being generated successfully (we have prediction IDs)
-                // But polling is failing due to missing backend endpoint
-                debugElement.innerHTML += '<br>⏭️ Skipping polling, using placeholder...';
-                console.log('⏭️ Skipping polling for now, using placeholder image');
-                
-                // Use a food placeholder image that matches the description
-                const placeholderUrl = `https://picsum.photos/800/600?random=${Math.floor(Math.random() * 1000)}`;
-                result = [placeholderUrl];
-                
-                debugElement.innerHTML += '<br>🖼️ Using placeholder image';
+                // Poll for completion using backend (FIXED!)
+                try {
+                    result = await window.Utils.pollReplicatePrediction(prediction.id, replicateApiKey);
+                    console.log(`🔍 Debug - Full result for image ${imageIndex}:`, result);
+                    debugElement.innerHTML += '<br>🖼️ Polling completed: ' + (result ? result.status || 'success' : 'failed');
+                } catch (pollError) {
+                    debugElement.innerHTML += '<br>❌ Polling error: ' + pollError.message;
+                    console.error('Polling error:', pollError);
+                    // Use placeholder as fallback
+                    const foodPlaceholders = [
+                        'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=800&h=600&fit=crop',
+                        'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=800&h=600&fit=crop',
+                        'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&h=600&fit=crop',
+                        'https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=800&h=600&fit=crop',
+                        'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&h=600&fit=crop'
+                    ];
+                    result = [foodPlaceholders[imageIndex % foodPlaceholders.length]];
+                    debugElement.innerHTML += '<br>🖼️ Using fallback placeholder';
+                }
             } else {
                 debugElement.innerHTML += '<br>❌ Polling function not available';
                 throw new Error('Polling function not available');

@@ -620,13 +620,11 @@ async function pollReplicatePrediction(predictionId, apiKey) {
         }
         
         const testResponse = await fetch(`${backendUrl}/api/replicate/predictions/${predictionId}`, {
-            method: 'POST',
+            method: 'GET',
             headers: {
+                'Authorization': `Token ${apiKey}`,
                 'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                apiKey: apiKey
-            })
+            }
         });
         
         console.log(`🧪 Test response status: ${testResponse.status}`);
@@ -674,10 +672,11 @@ async function pollReplicatePrediction(predictionId, apiKey) {
 
 // Direct Replicate API polling fallback
 async function pollReplicateDirectly(predictionId, apiKey, debugElement) {
-    console.log('🔄 Using direct Replicate API polling...');
+    console.log('🔄 Using backend polling (not direct API)...');
     if (debugElement) {
-        debugElement.innerHTML += '<br>🔄 Direct API polling...';
+        debugElement.innerHTML += '<br>🔄 Backend polling (fixed)...';
     }
+    const backendUrl = 'https://perfectplate-backend.onrender.com';
     const maxAttempts = 150;
     const pollInterval = 2000;
     let attempts = 0;
@@ -689,10 +688,10 @@ async function pollReplicateDirectly(predictionId, apiKey, debugElement) {
                 debugElement.innerHTML += '<br>🔄 Attempt ' + (attempts + 1) + '/150';
             }
             
-            const response = await fetch(`https://api.replicate.com/v1/predictions/${predictionId}`, {
+            const response = await fetch(`${backendUrl}/api/replicate/predictions/${predictionId}`, {
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${apiKey}`,
+                    'Authorization': `Token ${apiKey}`,
                     'Content-Type': 'application/json'
                 }
             });

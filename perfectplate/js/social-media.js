@@ -1581,16 +1581,14 @@ async function generateCleanAdvertisingImage(apiKey, prompt, negativePrompt) {
     console.log('✨ Enhanced prompt for food photography:', enhancedPrompt);
     console.log('🚫 Enhanced negative prompt:', requestBody.input.negative_prompt);
     
-    const response = await fetch('http://localhost:3000/api/replicate/predictions', {
+    // Call Replicate API directly
+    const response = await fetch('https://api.replicate.com/v1/predictions', {
         method: 'POST',
         headers: {
+            'Authorization': `Token ${apiKey}`,
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-            apiKey: apiKey,
-            version: requestBody.version,
-            input: requestBody.input
-        })
+        body: JSON.stringify(requestBody)
     });
     
     if (!response.ok) {
@@ -1635,16 +1633,14 @@ async function generatePhoneFocusedImage(apiKey, prompt) {
     
     console.log('⚙️ Phone-focused generation parameters:', JSON.stringify(requestBody, null, 2));
     
-    const response = await fetch('http://localhost:3000/api/replicate/predictions', {
+    // Call Replicate API directly
+    const response = await fetch('https://api.replicate.com/v1/predictions', {
         method: 'POST',
         headers: {
+            'Authorization': `Token ${apiKey}`,
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-            apiKey: apiKey,
-            version: requestBody.version,
-            input: requestBody.input
-        })
+        body: JSON.stringify(requestBody)
     });
     
     if (!response.ok) {
@@ -1695,16 +1691,14 @@ async function generateControlNetReference(apiKey, prompt, base64Image) {
         }
     }, null, 2));
     
-    const response = await fetch('http://localhost:3000/api/replicate/predictions', {
+    // Call Replicate API directly
+    const response = await fetch('https://api.replicate.com/v1/predictions', {
         method: 'POST',
         headers: {
+            'Authorization': `Token ${apiKey}`,
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-            apiKey: apiKey,
-            version: requestBody.version,
-            input: requestBody.input
-        })
+        body: JSON.stringify(requestBody)
     });
     
     if (!response.ok) {
@@ -1770,16 +1764,14 @@ async function generateSDXLTextToImage(apiKey, prompt, base64Image) {
     
     console.log('⚙️ SDXL Text-to-Image parameters:', JSON.stringify(requestBody, null, 2));
     
-    const response = await fetch('http://localhost:3000/api/replicate/predictions', {
+    // Call Replicate API directly
+    const response = await fetch('https://api.replicate.com/v1/predictions', {
         method: 'POST',
         headers: {
+            'Authorization': `Token ${apiKey}`,
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-            apiKey: apiKey,
-            version: requestBody.version,
-            input: requestBody.input
-        })
+        body: JSON.stringify(requestBody)
     });
     
     if (!response.ok) {

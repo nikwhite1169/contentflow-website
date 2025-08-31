@@ -605,7 +605,8 @@ async function pollReplicatePrediction(predictionId, apiKey) {
     
     while (attempts < maxAttempts) {
         try {
-            const response = await fetch(`http://localhost:3000/api/replicate/predictions/${predictionId}`, {
+            // Call Replicate API directly
+            const response = await fetch(`https://api.replicate.com/v1/predictions/${predictionId}`, {
                 headers: {
                     'Authorization': `Token ${apiKey}`
                 }

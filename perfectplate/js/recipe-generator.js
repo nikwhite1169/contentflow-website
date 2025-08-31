@@ -353,7 +353,7 @@ Create something delicious and inspiring - avoid basic sheet pan or one-pot reci
                         text: `${prompt}
 
 TITLE RULES (STRICT):
-- Must include the concrete recipe name (e.g., "butter gnocchi", "chili-lime salmon")
+- Must include the concrete recipe name (e.g., "herb-crusted chicken", "spiced lentil curry")
 - 6–12 words, click-worthy, enticing, NO listicles or collections
 - BANNED words: Collection, Roundup, Guide, Compilation, Delight, Perfect, Ultimate, Amazing, Best, Easy, Simple
 - AVOID formulaic patterns like "[Adjective] [Protein] with [Side]: A [Diet] [Generic Word]"
@@ -536,6 +536,28 @@ async function generateDynamicRecipeContent(diet) {
             difficultyLevel = 'Beginner-Intermediate';
         }
 
+        // Add ingredient diversity suggestions to prevent repetition
+        const proteinOptions = {
+            'paleo': ['grass-fed beef', 'free-range chicken', 'wild-caught fish', 'pork tenderloin', 'lamb', 'turkey', 'duck', 'game meat'],
+            'keto': ['fatty fish', 'ribeye steak', 'chicken thighs', 'pork belly', 'eggs', 'cheese', 'avocado'],
+            'vegan': ['lentils', 'chickpeas', 'tofu', 'tempeh', 'quinoa', 'black beans', 'nuts', 'seeds'],
+            'vegetarian': ['eggs', 'cheese', 'beans', 'lentils', 'quinoa', 'tofu', 'nuts'],
+            'gluten-free': ['rice', 'quinoa', 'fish', 'chicken', 'vegetables', 'legumes'],
+            'mediterranean': ['fish', 'olive oil', 'legumes', 'nuts', 'cheese']
+        };
+
+        const vegetableOptions = {
+            'paleo': ['broccoli', 'cauliflower', 'zucchini', 'bell peppers', 'mushrooms', 'spinach', 'kale', 'Brussels sprouts', 'cabbage', 'carrots'],
+            'keto': ['spinach', 'broccoli', 'cauliflower', 'zucchini', 'bell peppers', 'mushrooms', 'arugula', 'cabbage'],
+            'vegan': ['eggplant', 'tomatoes', 'bell peppers', 'onions', 'garlic', 'mushrooms', 'leafy greens', 'root vegetables'],
+            'vegetarian': ['tomatoes', 'peppers', 'onions', 'mushrooms', 'spinach', 'zucchini', 'eggplant'],
+            'gluten-free': ['any fresh vegetables', 'herbs', 'peppers', 'onions', 'tomatoes'],
+            'mediterranean': ['tomatoes', 'olives', 'peppers', 'eggplant', 'zucchini', 'herbs']
+        };
+
+        const randomProtein = proteinOptions[diet] ? proteinOptions[diet][Math.floor(Math.random() * proteinOptions[diet].length)] : 'protein of choice';
+        const randomVegetable = vegetableOptions[diet] ? vegetableOptions[diet][Math.floor(Math.random() * vegetableOptions[diet].length)] : 'seasonal vegetables';
+
         const prompt = `Create an inspiring and delicious ${diet} recipe that's a ${randomComplexity}. Make it ${randomMethod}.
 
 RECIPE REQUIREMENTS:
@@ -554,6 +576,11 @@ CREATIVITY GUIDELINES:
 - Consider umami elements and flavor layering
 - Make it Instagram-worthy and delicious
 - Avoid generic "sheet pan" or "one-pot" recipes unless specifically interesting
+
+INGREDIENT INSPIRATION (use as starting point, not requirement):
+- Consider featuring: ${randomProtein} and ${randomVegetable}
+- But feel free to use completely different ingredients that work better for your creative vision
+- Focus on seasonal, fresh ingredients that complement each other
 
 Format:
 TITLE: [Creative, appetizing recipe name that avoids clichés like "Delight", "Perfect", "Ultimate"] - ${diet.charAt(0).toUpperCase() + diet.slice(1)} Recipe
@@ -752,16 +779,14 @@ async function getRecipeImage(searchTerm) {
             window.Utils.showSuccess(`🎨 Generating AI image for: ${searchTerm}...`);
         }
         
-        const response = await fetch('http://localhost:3000/api/replicate/predictions', {
+        // Call Replicate API directly
+        const response = await fetch('https://api.replicate.com/v1/predictions', {
             method: 'POST',
             headers: {
+                'Authorization': `Token ${replicateApiKey}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                apiKey: replicateApiKey,
-                version: requestBody.version,
-                input: requestBody.input
-            })
+            body: JSON.stringify(requestBody)
         });
         
         if (!response.ok) {
@@ -915,7 +940,7 @@ Create comprehensive TikTok content with these components:
    - NO TEXT should appear in the video prompts
    - Each prompt should be exactly 5 seconds of visual content
    - CRITICAL: Each video clip must be completely self-contained and specific
-   - Always mention the exact ingredients by name (e.g., "diced sweet potatoes and chickpeas" not "the vegetables")
+   - Always mention the exact ingredients by name (e.g., "diced vegetables and protein" not "the ingredients")
    - Include specific cooking techniques and equipment
    - Don't reference other clips or assume prior context
 

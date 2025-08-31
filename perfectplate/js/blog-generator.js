@@ -556,7 +556,7 @@ async function generateCompellingShareText(title, category, keywords, content, a
         if (isRecipe && dietType === 'keto') emoji = '🥩';
         else if (isRecipe && dietType === 'vegan') emoji = '🌱';
         else if (isDietSpecific && dietType === 'diabetic') emoji = '🩺';
-        else if (isRecipe && content.toLowerCase().includes('salmon')) emoji = '🐟';
+        else if (isRecipe && (content.toLowerCase().includes('fish') || content.toLowerCase().includes('seafood'))) emoji = '🐟';
         else if (isRecipe) emoji = '🍽️';
         else if (isGuide) emoji = '🧠';
         
@@ -754,7 +754,7 @@ RECIPE BLOG POST REQUIREMENTS:
 - Transform the provided recipe content into a properly formatted blog post
 - Include image placeholders using this format: [IMAGE: detailed description for AI generation]
 - Create specific, visual descriptions for each image that would work well for AI generation
-- Examples: [IMAGE: Close-up shot of golden-brown crispy tofu cubes with fresh herbs on a white ceramic plate, natural lighting] or [IMAGE: Overhead view of colorful asparagus spears being sautéed in a cast iron pan with garlic and lemon]
+- Examples: [IMAGE: Close-up shot of golden-brown crispy tofu cubes with fresh herbs on a white ceramic plate, natural lighting] or [IMAGE: Overhead view of colorful vegetables being sautéed in a cast iron pan with herbs and spices]
 - Use proper recipe formatting with structured data
 - Include nutritional information and dietary tags
 - Make it SEO-optimized for recipe searches
@@ -832,7 +832,7 @@ RECIPE BLOG POST REQUIREMENTS:
 - Transform the provided recipe content into a properly formatted blog post
 - Include image placeholders using this format: [IMAGE: detailed description for AI generation]
 - Create specific, visual descriptions for each image that would work well for AI generation
-- Examples: [IMAGE: Close-up shot of golden-brown crispy tofu cubes with fresh herbs on a white ceramic plate, natural lighting] or [IMAGE: Overhead view of colorful asparagus spears being sautéed in a cast iron pan with garlic and lemon]
+- Examples: [IMAGE: Close-up shot of golden-brown crispy tofu cubes with fresh herbs on a white ceramic plate, natural lighting] or [IMAGE: Overhead view of colorful vegetables being sautéed in a cast iron pan with herbs and spices]
 - Use proper recipe formatting with structured data
 - Include nutritional information and dietary tags
 - Make it SEO-optimized for recipe searches
@@ -910,7 +910,7 @@ RECIPE BLOG POST REQUIREMENTS:
 - Transform the provided recipe content into a properly formatted blog post
 - Include image placeholders using this format: [IMAGE: detailed description for AI generation]
 - Create specific, visual descriptions for each image that would work well for AI generation
-- Examples: [IMAGE: Close-up shot of golden-brown crispy tofu cubes with fresh herbs on a white ceramic plate, natural lighting] or [IMAGE: Overhead view of colorful asparagus spears being sautéed in a cast iron pan with garlic and lemon]
+- Examples: [IMAGE: Close-up shot of golden-brown crispy tofu cubes with fresh herbs on a white ceramic plate, natural lighting] or [IMAGE: Overhead view of colorful vegetables being sautéed in a cast iron pan with herbs and spices]
 - Use proper recipe formatting with structured data
 - Include nutritional information and dietary tags
 - Make it SEO-optimized for recipe searches
@@ -939,7 +939,7 @@ HTML STRUCTURE REQUIREMENTS:
 IMAGE REQUIREMENTS:
 - Include image placeholders using this format: [IMAGE: detailed description for AI generation]
 - Create specific, visual descriptions for each image that would work well for AI generation
-- Examples: [IMAGE: Close-up shot of golden-brown crispy tofu cubes with fresh herbs on a white ceramic plate, natural lighting] or [IMAGE: Overhead view of colorful asparagus spears being sautéed in a cast iron pan with garlic and lemon]
+- Examples: [IMAGE: Close-up shot of golden-brown crispy tofu cubes with fresh herbs on a white ceramic plate, natural lighting] or [IMAGE: Overhead view of colorful vegetables being sautéed in a cast iron pan with herbs and spices]
 - Place images strategically throughout the post
 - Ensure descriptions are detailed and visually descriptive
 
@@ -1994,16 +1994,14 @@ async function extractAndGenerateImages(content, postTitle) {
             
             console.log(`🎨 Generating image ${imageIndex}: ${description}`);
             
-            const response = await fetch('http://localhost:3000/api/replicate/predictions', {
+            // Call Replicate API directly
+            const response = await fetch('https://api.replicate.com/v1/predictions', {
                 method: 'POST',
                 headers: {
+                    'Authorization': `Token ${replicateApiKey}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    apiKey: replicateApiKey,
-                    version: requestBody.version,
-                    input: requestBody.input
-                })
+                body: JSON.stringify(requestBody)
             });
             
             if (!response.ok) {

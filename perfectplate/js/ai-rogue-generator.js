@@ -5,7 +5,7 @@
 const AI_VIDEO_FLAWS = {
     overProduction: [
         "ingredients floating in zero gravity like a space commercial",
-        "salmon fillet ascending to heaven in slow motion with choir music",
+        "protein fillet ascending to heaven in slow motion with choir music",
         "vegetables arranged in impossible geometric patterns",
         "ingredients spinning on individual pedestals like luxury car ads"
     ],
@@ -163,7 +163,7 @@ CONCEPT: The voiceover is a REAL recipe description - explaining ingredients, te
 EXAMPLE VOICEOVER STYLES (mix these approaches):
 
 STYLE 1 - Recipe Enthusiasm:
-"This is honestly one of my favorite weeknight dinners - salmon is packed with omega-3s and cooks so quickly. [chuckles] The AI seems to think it deserves royal treatment."
+"This is honestly one of my favorite weeknight dinners - this protein is packed with nutrients and cooks so quickly. [chuckles] The AI seems to think it deserves royal treatment."
 
 STYLE 2 - Personal Insights:
 "What I love about this dish is how the dill brightens everything up. [sighs] Though apparently the computer thinks herbs should explode like fireworks."
@@ -175,7 +175,7 @@ STYLE 4 - Ease and Convenience:
 "The best part? It's basically impossible to mess up. [chuckles softly] Well, unless you're an AI trying to defy physics."
 
 STYLE 5 - Flavor Profile:
-"The lemon and dill combination is just perfect with salmon. [pauses] Right, so... back to normal cooking methods."
+"The lemon and herb combination is just perfect with this dish. [pauses] Right, so... back to normal cooking methods."
 
 VOICEOVER REQUIREMENTS:
 - PRIMARY: Enthusiastic recipe personality - why you love this dish, health benefits, ease of cooking, flavor profile, personal tips

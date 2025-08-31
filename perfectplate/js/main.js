@@ -379,16 +379,14 @@ async function extractAndGenerateImages(content, postTitle) {
             
             console.log(`🎨 Generating image ${imageIndex}: ${description}`);
             
-            const response = await fetch('http://localhost:3000/api/replicate/predictions', {
+            // Call Replicate API directly
+            const response = await fetch('https://api.replicate.com/v1/predictions', {
                 method: 'POST',
                 headers: {
+                    'Authorization': `Token ${replicateApiKey}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    apiKey: replicateApiKey,
-                    version: requestBody.version,
-                    input: requestBody.input
-                })
+                body: JSON.stringify(requestBody)
             });
             
             if (!response.ok) {

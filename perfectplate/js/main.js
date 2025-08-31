@@ -410,7 +410,7 @@ async function extractAndGenerateImages(content, postTitle) {
             debugElement.innerHTML += '<br>🌐 Calling Replicate API for image ' + imageIndex + '...';
             
             // Try XMLHttpRequest as alternative to fetch
-            debugElement.innerHTML += '<br>🔄 Trying XMLHttpRequest method...';
+            debugElement.innerHTML += '<br>🔄 XHR METHOD STARTING...';
             
             const xhr = new XMLHttpRequest();
             const response = await new Promise((resolve, reject) => {

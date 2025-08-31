@@ -409,19 +409,39 @@ async function extractAndGenerateImages(content, postTitle) {
             // Call Replicate API directly
             debugElement.innerHTML += '<br>🌐 Calling Replicate API for image ' + imageIndex + '...';
             
-            // Simple direct API call with detailed error info
-            debugElement.innerHTML += '<br>🔄 Calling Replicate API...';
+            // Try XMLHttpRequest as alternative to fetch
+            debugElement.innerHTML += '<br>🔄 Trying XMLHttpRequest method...';
             
-            const response = await fetch('https://api.replicate.com/v1/predictions', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Token ${replicateApiKey}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(requestBody)
+            const xhr = new XMLHttpRequest();
+            const response = await new Promise((resolve, reject) => {
+                xhr.open('POST', 'https://api.replicate.com/v1/predictions', true);
+                xhr.setRequestHeader('Authorization', `Token ${replicateApiKey}`);
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                
+                xhr.onload = function() {
+                    debugElement.innerHTML += '<br>📡 XHR Response: ' + xhr.status + ' ' + xhr.statusText;
+                    resolve({
+                        ok: xhr.status >= 200 && xhr.status < 300,
+                        status: xhr.status,
+                        statusText: xhr.statusText,
+                        text: () => Promise.resolve(xhr.responseText),
+                        json: () => Promise.resolve(JSON.parse(xhr.responseText))
+                    });
+                };
+                
+                xhr.onerror = function() {
+                    debugElement.innerHTML += '<br>❌ XHR Network Error';
+                    reject(new Error('XHR Network Error'));
+                };
+                
+                xhr.ontimeout = function() {
+                    debugElement.innerHTML += '<br>⏰ XHR Timeout';
+                    reject(new Error('XHR Timeout'));
+                };
+                
+                xhr.timeout = 30000; // 30 second timeout
+                xhr.send(JSON.stringify(requestBody));
             });
-            
-            debugElement.innerHTML += '<br>📡 Response: ' + response.status + ' ' + response.statusText;
             
             if (!response.ok) {
                 const errorText = await response.text();

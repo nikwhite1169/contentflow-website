@@ -409,39 +409,25 @@ async function extractAndGenerateImages(content, postTitle) {
             // Call Replicate API directly
             debugElement.innerHTML += '<br>🌐 Calling Replicate API for image ' + imageIndex + '...';
             
-            // Try XMLHttpRequest as alternative to fetch
-            debugElement.innerHTML += '<br>🔄 XHR METHOD STARTING...';
+            // Use backend server (Render) as CORS proxy - this was working before!
+            debugElement.innerHTML += '<br>🔄 Using backend server proxy...';
             
-            const xhr = new XMLHttpRequest();
-            const response = await new Promise((resolve, reject) => {
-                xhr.open('POST', 'https://api.replicate.com/v1/predictions', true);
-                xhr.setRequestHeader('Authorization', `Token ${replicateApiKey}`);
-                xhr.setRequestHeader('Content-Type', 'application/json');
-                
-                xhr.onload = function() {
-                    debugElement.innerHTML += '<br>📡 XHR Response: ' + xhr.status + ' ' + xhr.statusText;
-                    resolve({
-                        ok: xhr.status >= 200 && xhr.status < 300,
-                        status: xhr.status,
-                        statusText: xhr.statusText,
-                        text: () => Promise.resolve(xhr.responseText),
-                        json: () => Promise.resolve(JSON.parse(xhr.responseText))
-                    });
-                };
-                
-                xhr.onerror = function() {
-                    debugElement.innerHTML += '<br>❌ XHR Network Error';
-                    reject(new Error('XHR Network Error'));
-                };
-                
-                xhr.ontimeout = function() {
-                    debugElement.innerHTML += '<br>⏰ XHR Timeout';
-                    reject(new Error('XHR Timeout'));
-                };
-                
-                xhr.timeout = 30000; // 30 second timeout
-                xhr.send(JSON.stringify(requestBody));
+            // Try your Render backend URL first
+            const backendUrl = 'https://perfectplate-backend.onrender.com'; // Replace with your actual Render URL
+            
+            const response = await fetch(`${backendUrl}/api/replicate/predictions`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    apiKey: replicateApiKey,
+                    version: requestBody.version,
+                    input: requestBody.input
+                })
             });
+            
+            debugElement.innerHTML += '<br>📡 Backend Response: ' + response.status;
             
             if (!response.ok) {
                 const errorText = await response.text();
@@ -454,10 +440,11 @@ async function extractAndGenerateImages(content, postTitle) {
             console.log(`📤 Image ${imageIndex} generation started:`, prediction.id);
             debugElement.innerHTML += '<br>✅ API Success ' + imageIndex + ': ' + prediction.id;
             
-            // Poll for completion
+            // Poll for completion using backend
             if (window.Utils && window.Utils.pollReplicatePrediction) {
                 const result = await window.Utils.pollReplicatePrediction(prediction.id, replicateApiKey);
                 console.log(`🔍 Debug - Full result for image ${imageIndex}:`, result);
+                debugElement.innerHTML += '<br>🖼️ Polling result: ' + (result ? result.status : 'failed');
                 console.log(`🔍 Debug - Result type:`, typeof result);
                 console.log(`🔍 Debug - Is array:`, Array.isArray(result));
                 

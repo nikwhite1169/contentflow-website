@@ -605,15 +605,14 @@ async function pollReplicatePrediction(predictionId, apiKey) {
     
     while (attempts < maxAttempts) {
         try {
-            // Use CORS proxy to bypass browser restrictions
-            const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
-            const targetUrl = `https://api.replicate.com/v1/predictions/${predictionId}`;
+            // Use backend server for polling
+            const backendUrl = 'https://perfectplate-backend.onrender.com'; // Replace with your actual Render URL
             
-            const response = await fetch(proxyUrl + targetUrl, {
+            const response = await fetch(`${backendUrl}/api/replicate/predictions/${predictionId}`, {
                 headers: {
-                    'Authorization': `Token ${apiKey}`,
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ apiKey: apiKey })
             });
             
             if (!response.ok) {

@@ -300,6 +300,13 @@ DIET: ${dietInfo.name} (${dietInfo.description})
 
 Create an inspiring blog post idea for ONE creative ${diet} recipe. Think beyond basic dishes - create something that will excite readers and make them want to cook immediately.
 
+TITLE PATTERN EXAMPLES (use variety, don't copy exactly):
+- "[Cooking Method] [Protein/Main] with [Flavor Profile]" → "Pan-Seared Salmon with Miso Glaze"
+- "[Texture] [Main Ingredient] [Preparation]" → "Crispy-Skinned Duck Breast"
+- "[Spice/Herb] [Cooking Method] [Protein]" → "Rosemary-Crusted Lamb Chops"
+- "[Cultural Fusion] [Main Dish]" → "Korean-Style Braised Short Ribs"
+- "[Unique Ingredient] [Traditional Dish]" → "Miso-Butter Roasted Vegetables"
+
 RECIPE INSPIRATION TYPES (choose one approach):
 - Quick 20-minute ${diet} weeknight dinner
 - Simple ${diet} comfort food with big flavors
@@ -317,6 +324,9 @@ TITLE REQUIREMENTS:
 - Include sensory words (crispy, creamy, smoky, etc.)
 - Avoid generic words like "easy" or "simple"
 - Focus on what makes the dish special
+- AVOID repetitive patterns and formulaic endings
+- NO overused words like "Delight", "Perfect", "Ultimate", "Amazing"
+- Create unique, memorable titles that stand out from other recipes
 
 RECIPE SHOULD FEATURE:
 - Interesting cooking techniques or flavor combinations (appropriate for skill level)
@@ -345,7 +355,10 @@ Create something delicious and inspiring - avoid basic sheet pan or one-pot reci
 TITLE RULES (STRICT):
 - Must include the concrete recipe name (e.g., "butter gnocchi", "chili-lime salmon")
 - 6–12 words, click-worthy, enticing, NO listicles or collections
-- BANNED words: Collection, Roundup, Guide, Compilation
+- BANNED words: Collection, Roundup, Guide, Compilation, Delight, Perfect, Ultimate, Amazing, Best, Easy, Simple
+- AVOID formulaic patterns like "[Adjective] [Protein] with [Side]: A [Diet] [Generic Word]"
+- USE varied structures: focus on cooking method, flavor profile, texture, or unique ingredient
+- EXAMPLES of good variety: "Smoky Paprika Chicken Thighs", "Coconut-Braised Short Ribs", "Herb-Crusted Salmon Fillets", "Spiced Cauliflower Steaks"
 
 OUTPUT FORMAT (exactly these 3 lines):
 TITLE: <your title>
@@ -543,8 +556,15 @@ CREATIVITY GUIDELINES:
 - Avoid generic "sheet pan" or "one-pot" recipes unless specifically interesting
 
 Format:
-TITLE: [Creative, appetizing recipe name] - ${diet.charAt(0).toUpperCase() + diet.slice(1)} Recipe
+TITLE: [Creative, appetizing recipe name that avoids clichés like "Delight", "Perfect", "Ultimate"] - ${diet.charAt(0).toUpperCase() + diet.slice(1)} Recipe
 KEYWORDS: ${diet} recipe, ${diet} cooking, gourmet ${diet} meal, ${diet} cuisine
+
+TITLE CREATIVITY GUIDELINES:
+- Focus on the main cooking technique (braised, seared, roasted, grilled)
+- Highlight unique flavor combinations (honey-miso, lemon-thyme, chili-lime)
+- Emphasize texture contrasts (crispy, creamy, tender, crunchy)
+- Use specific ingredient names rather than generic terms
+- Avoid overused recipe words and formulaic patterns
 
 RECIPE CONTENT:
 **[Recipe Name]**
@@ -660,8 +680,16 @@ Generate a creative, flavorful recipe now:`;
             // Try to salvage a recipe name from content
             const nameGuess = (cleanedResponse.match(/\*\*\[(.*?)\]\*\*/)
                 || cleanedResponse.match(/\*\*([^*]+)\*\*/)
-                || [null, 'Delicious']).pop();
+                || [null, 'Flavorful']).pop();
             title = `${dietEmojis[diet]} ${nameGuess} (${diet.charAt(0).toUpperCase() + diet.slice(1)})`;
+        }
+        
+        // Additional check for overused words in titles
+        const overusedWords = ['delight', 'perfect', 'ultimate', 'amazing', 'best', 'easy', 'simple'];
+        const titleLower = title.toLowerCase();
+        if (overusedWords.some(word => titleLower.includes(word))) {
+            console.warn('⚠️ Title contains overused words, but keeping AI-generated title:', title);
+            // Could implement title regeneration here if needed
         }
         
         console.log('Recipe content generated successfully'); // Debug log

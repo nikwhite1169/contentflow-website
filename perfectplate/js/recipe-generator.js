@@ -753,6 +753,11 @@ async function getRecipeImage(searchTerm) {
         console.log('🔑 Found Replicate API key (length):', replicateApiKey.length);
         console.log('🔑 API key starts with:', replicateApiKey.substring(0, 8) + '...');
         
+        // Show visible debug message on page
+        if (window.Utils) {
+            window.Utils.showSuccess(`🔑 Using API key: ${replicateApiKey.substring(0, 8)}... (length: ${replicateApiKey.length})`);
+        }
+        
         // Create professional food photography prompt
         const enhancedPrompt = `Professional food photography of ${searchTerm}, beautiful plating, natural lighting, top-down view, vibrant colors, 4k detail, photorealistic, mouth-watering, restaurant quality presentation, crisp details, textured surface`;
         
@@ -795,6 +800,9 @@ async function getRecipeImage(searchTerm) {
         if (!response.ok) {
             const errorText = await response.text();
             console.error('❌ Replicate API Error:', errorText);
+            if (window.Utils) {
+                window.Utils.showError(`❌ Replicate API Error: ${response.status} - ${errorText.substring(0, 100)}...`);
+            }
             throw new Error(`Replicate API error: ${response.status}`);
         }
         
@@ -817,6 +825,13 @@ async function getRecipeImage(searchTerm) {
         
     } catch (error) {
         console.error('Error generating recipe image:', error);
+        if (window.Utils) {
+            if (error.message.includes('Failed to fetch')) {
+                window.Utils.showError('❌ Network Error: Cannot reach Replicate API. Check internet connection or try different browser.');
+            } else {
+                window.Utils.showError(`❌ Image Generation Error: ${error.message}`);
+            }
+        }
         return null;
     }
 }

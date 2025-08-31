@@ -1249,57 +1249,7 @@
 
     <!-- API Key Persistence -->
     <script>
-        // Override the generateBlogPost function to add debugging
-        window.originalGenerateBlogPost = window.generateBlogPost;
-        window.generateBlogPost = function() {
-            alert('🔍 INTERCEPT: generateBlogPost() was called!');
-            if (window.originalGenerateBlogPost) {
-                return window.originalGenerateBlogPost();
-            }
-        };
-        
-        // Check what extractAndGenerateImages functions exist
-        setTimeout(function() {
-            let functionCount = 0;
-            let functionSources = [];
-            
-            // Check global scope
-            if (window.extractAndGenerateImages) {
-                functionCount++;
-                functionSources.push('window.extractAndGenerateImages');
-            }
-            
-            // Check if BlogGenerator has it
-            if (window.BlogGenerator && window.BlogGenerator.extractAndGenerateImages) {
-                functionCount++;
-                functionSources.push('BlogGenerator.extractAndGenerateImages');
-            }
-            
-            // Check main.js scope
-            if (window.main && window.main.extractAndGenerateImages) {
-                functionCount++;
-                functionSources.push('main.extractAndGenerateImages');
-            }
-            
-            alert('🔍 FOUND ' + functionCount + ' extractAndGenerateImages functions: ' + functionSources.join(', '));
-            
-            // Check what's actually in the function
-            if (window.extractAndGenerateImages) {
-                try {
-                    const funcString = window.extractAndGenerateImages.toString();
-                    const hasDebugElement = funcString.includes('DEBUG: extractAndGenerateImages started');
-                    alert('🔍 Function contains our debug code: ' + hasDebugElement);
-                } catch (error) {
-                    alert('❌ Error inspecting function: ' + error.message);
-                }
-                
-                window.originalExtractAndGenerateImages = window.extractAndGenerateImages;
-                window.extractAndGenerateImages = function(content, postTitle) {
-                    alert('🎯 GLOBAL extractAndGenerateImages called!');
-                    return window.originalExtractAndGenerateImages(content, postTitle);
-                };
-            }
-        }, 2000);
+        // Clean startup - no more alerts
         
         document.addEventListener('DOMContentLoaded', function() {
             const geminiApiKeyInput = document.getElementById('geminiApiKey');

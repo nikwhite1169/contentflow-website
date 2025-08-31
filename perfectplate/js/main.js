@@ -340,7 +340,8 @@ async function extractAndGenerateImages(content, postTitle) {
     }
     
     debugElement.innerHTML += '<br>✅ API Key found (length: ' + replicateApiKey.length + ')';
-    debugElement.innerHTML += '<br>🔑 API Key format: ' + (replicateApiKey.startsWith('r8_') ? 'VALID (r8_...)' : 'INVALID (should start with r8_)');
+    debugElement.innerHTML += '<br>🔑 Key format: ' + (replicateApiKey.startsWith('r8_') ? 'VALID' : 'INVALID - should start with r8_');
+    debugElement.innerHTML += '<br>🔑 Key preview: ' + replicateApiKey.substring(0, 8) + '...';
     
     // Clean up any old RECIPE_IMAGE_SEARCH placeholders first
     if (content.includes('[RECIPE_IMAGE_SEARCH:')) {
@@ -408,22 +409,7 @@ async function extractAndGenerateImages(content, postTitle) {
             // Call Replicate API directly
             debugElement.innerHTML += '<br>🌐 Calling Replicate API for image ' + imageIndex + '...';
             
-            // Check if we can reach the internet first
-            debugElement.innerHTML += '<br>🌐 Testing internet connectivity...';
-            
-            try {
-                // Test basic connectivity
-                const testResponse = await fetch('https://httpbin.org/get', {
-                    method: 'GET',
-                    mode: 'cors'
-                });
-                debugElement.innerHTML += '<br>✅ Internet OK: ' + testResponse.status;
-            } catch (connectError) {
-                debugElement.innerHTML += '<br>❌ No Internet: ' + connectError.message;
-                throw new Error('No internet connection');
-            }
-            
-            // Now try Replicate API
+            // Simple direct API call with detailed error info
             debugElement.innerHTML += '<br>🔄 Calling Replicate API...';
             
             const response = await fetch('https://api.replicate.com/v1/predictions', {
@@ -435,7 +421,7 @@ async function extractAndGenerateImages(content, postTitle) {
                 body: JSON.stringify(requestBody)
             });
             
-            debugElement.innerHTML += '<br>📡 Replicate Response: ' + response.status;
+            debugElement.innerHTML += '<br>📡 Response: ' + response.status + ' ' + response.statusText;
             
             if (!response.ok) {
                 const errorText = await response.text();

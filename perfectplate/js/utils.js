@@ -599,28 +599,118 @@ async function overlayScreenshotOnImage(baseImageUrl, base64Screenshot, title) {
 
 // Advanced Replicate Prediction Polling System (missing from original modularization)
 async function pollReplicatePrediction(predictionId, apiKey) {
+    console.log('🚀 POLLING FUNCTION STARTED for:', predictionId);
+    
+    // Add debug to visible element
+    const debugElement = document.querySelector('[style*="position: fixed"][style*="top: 10px"][style*="right: 10px"]');
+    if (debugElement) {
+        debugElement.innerHTML += '<br>🚀 POLLING STARTED: ' + predictionId.substring(0, 8) + '...';
+    }
+    
     const maxAttempts = 150; // Increased from 60 to 150 (5 minutes at 2-second intervals)
     const pollInterval = 2000; // 2 seconds
     let attempts = 0;
     
+    // TEMPORARY: Test if backend polling endpoint exists
+    try {
+        const backendUrl = 'https://perfectplate-backend.onrender.com';
+        console.log('🧪 Testing backend polling endpoint...');
+        if (debugElement) {
+            debugElement.innerHTML += '<br>🧪 Testing backend polling...';
+        }
+        
+        const testResponse = await fetch(`${backendUrl}/api/replicate/predictions/${predictionId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                apiKey: apiKey
+            })
+        });
+        
+        console.log(`🧪 Test response status: ${testResponse.status}`);
+        if (debugElement) {
+            debugElement.innerHTML += '<br>📡 Backend status: ' + testResponse.status;
+        }
+        
+        if (!testResponse.ok) {
+            const errorText = await testResponse.text();
+            console.error(`🧪 Backend polling endpoint error:`, errorText);
+            if (debugElement) {
+                debugElement.innerHTML += '<br>❌ Backend failed: ' + testResponse.status;
+                debugElement.innerHTML += '<br>🔄 Trying direct API...';
+            }
+            
+            // If polling endpoint doesn't exist, try direct Replicate API
+            console.log('🔄 Falling back to direct Replicate API polling...');
+            return await pollReplicateDirectly(predictionId, apiKey, debugElement);
+        }
+        
+        const testResult = await testResponse.json();
+        console.log('🧪 Backend polling works! Result:', testResult);
+        
+        // If it works, return the result
+        if (testResult.status === 'succeeded') {
+            return testResult.output;
+        } else if (testResult.status === 'failed') {
+            throw new Error(`Image generation failed: ${testResult.error}`);
+        } else {
+            // Still processing, fall back to direct polling for now
+            console.log('🔄 Still processing, using direct API...');
+            return await pollReplicateDirectly(predictionId, apiKey);
+        }
+        
+    } catch (backendError) {
+        console.error('🧪 Backend test failed:', backendError);
+        if (debugElement) {
+            debugElement.innerHTML += '<br>💥 Backend error: ' + backendError.message;
+            debugElement.innerHTML += '<br>🔄 Trying direct API...';
+        }
+        console.log('🔄 Falling back to direct Replicate API polling...');
+        return await pollReplicateDirectly(predictionId, apiKey, debugElement);
+    }
+}
+
+// Direct Replicate API polling fallback
+async function pollReplicateDirectly(predictionId, apiKey, debugElement) {
+    console.log('🔄 Using direct Replicate API polling...');
+    if (debugElement) {
+        debugElement.innerHTML += '<br>🔄 Direct API polling...';
+    }
+    const maxAttempts = 150;
+    const pollInterval = 2000;
+    let attempts = 0;
+
     while (attempts < maxAttempts) {
         try {
-            // Use backend server for polling
-            const backendUrl = 'https://perfectplate-backend.onrender.com'; // Replace with your actual Render URL
+            console.log(`🔄 Direct polling attempt ${attempts + 1}/${maxAttempts} for prediction: ${predictionId}`);
+            if (debugElement) {
+                debugElement.innerHTML += '<br>🔄 Attempt ' + (attempts + 1) + '/150';
+            }
             
-            const response = await fetch(`${backendUrl}/api/replicate/predictions/${predictionId}`, {
+            const response = await fetch(`https://api.replicate.com/v1/predictions/${predictionId}`, {
+                method: 'GET',
                 headers: {
+                    'Authorization': `Bearer ${apiKey}`,
                     'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ apiKey: apiKey })
+                }
             });
             
+            console.log(`📡 Direct polling response status: ${response.status}`);
+            if (debugElement) {
+                debugElement.innerHTML += '<br>📡 Direct status: ' + response.status;
+            }
+            
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                const errorText = await response.text();
+                console.error(`❌ Direct polling failed with status ${response.status}:`, errorText);
+                throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
             }
             
             const prediction = await response.json();
             console.log('🔄 Prediction status:', prediction.status);
+            console.log('🔍 Full prediction object:', prediction);
             
             if (prediction.status === 'succeeded') {
                 return prediction.output;
@@ -630,22 +720,26 @@ async function pollReplicatePrediction(predictionId, apiKey) {
                 throw new Error('Image generation was canceled');
             }
             
-            // Add special handling for stuck predictions
-            if (attempts > 75 && prediction.status === 'starting') {
-                console.log('⚠️ Prediction stuck in starting status for over 2.5 minutes, may be overloaded');
+            // Still processing, wait and try again
+            attempts++;
+            if (attempts < maxAttempts) {
+                console.log(`⏳ Waiting ${pollInterval}ms before next attempt...`);
+                await new Promise(resolve => setTimeout(resolve, pollInterval));
             }
             
-            attempts++;
-            await new Promise(resolve => setTimeout(resolve, pollInterval));
-            
         } catch (error) {
-            console.error('Error polling prediction:', error);
+            console.error(`❌ Direct polling error on attempt ${attempts + 1}:`, error);
             attempts++;
-            await new Promise(resolve => setTimeout(resolve, pollInterval));
+            if (attempts < maxAttempts) {
+                console.log(`⏳ Retrying in ${pollInterval}ms...`);
+                await new Promise(resolve => setTimeout(resolve, pollInterval));
+            } else {
+                throw error;
+            }
         }
     }
     
-    throw new Error('Prediction polling timed out after 5 minutes');
+    throw new Error(`Polling timeout after ${maxAttempts} attempts`);
 }
 
 // Export all utilities (updated with new functions)

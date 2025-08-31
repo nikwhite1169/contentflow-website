@@ -605,10 +605,14 @@ async function pollReplicatePrediction(predictionId, apiKey) {
     
     while (attempts < maxAttempts) {
         try {
-            // Call Replicate API directly
-            const response = await fetch(`https://api.replicate.com/v1/predictions/${predictionId}`, {
+            // Use CORS proxy to bypass browser restrictions
+            const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+            const targetUrl = `https://api.replicate.com/v1/predictions/${predictionId}`;
+            
+            const response = await fetch(proxyUrl + targetUrl, {
                 headers: {
-                    'Authorization': `Token ${apiKey}`
+                    'Authorization': `Token ${apiKey}`,
+                    'X-Requested-With': 'XMLHttpRequest'
                 }
             });
             

@@ -1936,13 +1936,56 @@ async function extractAndGenerateImages(content, postTitle) {
     let updatedContent = content;
     let imageIndex = 1;
     
+    // Debug: Show that function is being called
+    console.log('🔍 BLOG-GENERATOR extractAndGenerateImages called with:', { postTitle, contentLength: content.length });
+    
+    // Create a simple debug element that's always visible
+    const debugElement = document.createElement('div');
+    debugElement.style.cssText = 'position: fixed; top: 10px; right: 10px; background: red; color: white; padding: 10px; z-index: 9999; border-radius: 5px; max-width: 300px; font-size: 12px;';
+    debugElement.innerHTML = 'DEBUG: extractAndGenerateImages started!';
+    document.body.appendChild(debugElement);
+    
+    // Show debug message in the blog preview area where user can see it
+    const previewContent = document.getElementById('previewContent');
+    
+    // Create or get debug container
+    let debugContainer = document.getElementById('debugContainer');
+    if (!debugContainer) {
+        debugContainer = document.createElement('div');
+        debugContainer.id = 'debugContainer';
+        debugContainer.style.cssText = 'border: 2px solid #333; background: #f5f5f5; padding: 15px; margin: 20px 0; border-radius: 8px; font-family: monospace;';
+        debugContainer.innerHTML = '<h3 style="margin: 0 0 10px 0; color: #333;">🔍 Image Generation Debug Log</h3>';
+        if (previewContent) {
+            previewContent.insertBefore(debugContainer, previewContent.firstChild);
+        } else {
+            // If previewContent doesn't exist, add to body as fallback
+            document.body.appendChild(debugContainer);
+        }
+    }
+    
+    // Test if debug container was created successfully
+    if (!debugContainer) {
+        alert('❌ DEBUG: Could not create debug container!');
+        return { images: [], updatedContent: updatedContent };
+    }
+    
+    function addDebugMessage(message, color = '#4CAF50') {
+        const timestamp = new Date().toLocaleTimeString();
+        const debugMsg = document.createElement('div');
+        debugMsg.style.cssText = `background: ${color}; color: white; padding: 8px; margin: 5px 0; border-radius: 4px; font-weight: bold; font-size: 12px;`;
+        debugMsg.innerHTML = `[${timestamp}] ${message}`;
+        debugContainer.appendChild(debugMsg);
+    }
+    
+    addDebugMessage('🔍 BLOG: Starting image generation process...', '#4CAF50');
+    
     // Get Replicate API key
     const replicateApiKey = document.getElementById('replicateApiKey')?.value;
     if (!replicateApiKey) {
         console.warn('Replicate API key not found. Images will not be generated.');
-        if (window.Utils) {
-            window.Utils.showError('⚠️ Replicate API key required for image generation. Please add it in the Social Media tab.');
-        }
+        
+        addDebugMessage('❌ BLOG: No Replicate API key found! Please add it in the settings above.', '#f44336');
+        
         return {
             images: [],
             updatedContent: updatedContent
@@ -1953,8 +1996,16 @@ async function extractAndGenerateImages(content, postTitle) {
     const imagePattern = /\[IMAGE:\s*([^\]]+)\]/g;
     const matches = [...content.matchAll(imagePattern)];
     
+    console.log('🔍 BLOG: Looking for [IMAGE: ...] placeholders in content...');
+    if (window.Utils) {
+        window.Utils.showSuccess(`🔍 BLOG: Searching for image placeholders in ${content.length} characters of content...`);
+    }
+    
     if (matches.length === 0) {
         console.log('No image placeholders found in content');
+        
+        addDebugMessage('⚠️ BLOG: No [IMAGE: ...] placeholders found in generated content. The AI did not include image tags.', '#ff9800');
+        
         return {
             images: [],
             updatedContent: updatedContent
@@ -1962,13 +2013,16 @@ async function extractAndGenerateImages(content, postTitle) {
     }
     
     console.log(`🎨 Found ${matches.length} image placeholders, generating with Replicate AI...`);
-    if (window.Utils) {
-        window.Utils.showSuccess(`🎨 Generating ${matches.length} AI images for your recipe...`);
-    }
+    
+    addDebugMessage(`🎨 BLOG: Found ${matches.length} image placeholders! Starting API calls...`, '#2196F3');
     
     for (const match of matches) {
         const description = match[1].trim();
         const placeholder = match[0];
+        
+        // Debug each image attempt
+        console.log(`🎨 BLOG: Attempting to generate image ${imageIndex}: ${description}`);
+        addDebugMessage(`🎨 BLOG: Starting image ${imageIndex}/${matches.length}: ${description.substring(0, 50)}...`, '#9C27B0');
         
         try {
             // Create enhanced prompt for food photography
@@ -2007,11 +2061,13 @@ async function extractAndGenerateImages(content, postTitle) {
             if (!response.ok) {
                 const errorText = await response.text();
                 console.error('❌ Replicate API Error:', errorText);
+                addDebugMessage(`❌ BLOG: API Error for image ${imageIndex}: ${response.status} - ${errorText.substring(0, 100)}...`, '#f44336');
                 throw new Error(`Replicate API error: ${response.status}`);
             }
             
             const prediction = await response.json();
             console.log(`📤 Image ${imageIndex} generation started:`, prediction.id);
+            addDebugMessage(`✅ BLOG: API call successful for image ${imageIndex}! Prediction ID: ${prediction.id}`, '#4CAF50');
             
             // Poll for completion
             if (window.Utils && window.Utils.pollReplicatePrediction) {
@@ -2063,6 +2119,11 @@ async function extractAndGenerateImages(content, postTitle) {
             }
         } catch (error) {
             console.error('Error generating image for:', description, error);
+            if (error.message.includes('Failed to fetch')) {
+                addDebugMessage(`❌ BLOG: Network error for image ${imageIndex}: Cannot reach Replicate API`, '#f44336');
+            } else {
+                addDebugMessage(`❌ BLOG: Error for image ${imageIndex}: ${error.message}`, '#f44336');
+            }
             // Remove placeholder if image generation failed
             updatedContent = updatedContent.replace(placeholder, '');
         }

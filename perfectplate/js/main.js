@@ -312,10 +312,24 @@ async function extractAndGenerateImages(content, postTitle) {
     let updatedContent = content;
     let imageIndex = 1;
     
+    // Debug: Show that function is being called
+    console.log('🔍 extractAndGenerateImages called with:', { postTitle, contentLength: content.length });
+    
+    // VISIBLE DEBUG - This should show up!
+    const debugElement = document.createElement('div');
+    debugElement.style.cssText = 'position: fixed; top: 10px; right: 10px; background: red; color: white; padding: 10px; z-index: 9999; border-radius: 5px; max-width: 300px; font-size: 12px;';
+    debugElement.innerHTML = '🎯 MAIN.JS: extractAndGenerateImages started!';
+    document.body.appendChild(debugElement);
+    
+    if (window.Utils) {
+        window.Utils.showSuccess('🔍 Starting image generation process...');
+    }
+    
     // Get Replicate API key
     const replicateApiKey = document.getElementById('replicateApiKey')?.value;
     if (!replicateApiKey) {
         console.warn('Replicate API key not found. Images will not be generated.');
+        debugElement.innerHTML += '<br>❌ NO API KEY FOUND!';
         if (window.Utils) {
             window.Utils.showError('⚠️ Replicate API key required for image generation. Please add it in the Social Media tab.');
         }
@@ -324,6 +338,8 @@ async function extractAndGenerateImages(content, postTitle) {
             updatedContent: updatedContent
         };
     }
+    
+    debugElement.innerHTML += '<br>✅ API Key found (length: ' + replicateApiKey.length + ')';
     
     // Clean up any old RECIPE_IMAGE_SEARCH placeholders first
     if (content.includes('[RECIPE_IMAGE_SEARCH:')) {
@@ -336,8 +352,14 @@ async function extractAndGenerateImages(content, postTitle) {
     const imagePattern = /\[IMAGE:\s*([^\]]+)\]/g;
     const matches = [...content.matchAll(imagePattern)];
     
+    debugElement.innerHTML += '<br>🔍 Found ' + matches.length + ' [IMAGE: ...] placeholders';
+    
     if (matches.length === 0) {
         console.log('No image placeholders found in content');
+        debugElement.innerHTML += '<br>❌ NO IMAGE PLACEHOLDERS - AI did not include [IMAGE: ...] tags';
+        if (window.Utils) {
+            window.Utils.showError('⚠️ No [IMAGE: ...] placeholders found in generated content. Images may not be included in the blog template.');
+        }
         return {
             images: [],
             updatedContent: updatedContent
@@ -345,6 +367,8 @@ async function extractAndGenerateImages(content, postTitle) {
     }
     
     console.log(`🎨 Found ${matches.length} image placeholders, generating with Replicate AI...`);
+    debugElement.innerHTML += '<br>🎨 Starting API calls for ' + matches.length + ' images...';
+    
     if (window.Utils) {
         window.Utils.showSuccess(`🎨 Generating ${matches.length} AI images for your recipe...`);
     }
@@ -378,25 +402,41 @@ async function extractAndGenerateImages(content, postTitle) {
             };
             
             console.log(`🎨 Generating image ${imageIndex}: ${description}`);
+            debugElement.innerHTML += '<br>📸 Image ' + imageIndex + ': ' + description.substring(0, 30) + '...';
             
             // Call Replicate API directly
+            debugElement.innerHTML += '<br>🌐 Calling Replicate API for image ' + imageIndex + '...';
+            
+            // Try direct call first (might work in production)
+            debugElement.innerHTML += '<br>🔄 Trying direct API call...';
+            
             const response = await fetch('https://api.replicate.com/v1/predictions', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Token ${replicateApiKey}`,
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
                 },
                 body: JSON.stringify(requestBody)
             });
             
+            debugElement.innerHTML += '<br>📡 API Response received for image ' + imageIndex + ': ' + response.status;
+            
+            // Add helpful message about CORS
+            if (response.status === 0 || response.status >= 400) {
+                debugElement.innerHTML += '<br>💡 CORS Issue: This will work when deployed to GitHub Pages or a web server!';
+            }
+            
             if (!response.ok) {
                 const errorText = await response.text();
                 console.error('❌ Replicate API Error:', errorText);
+                debugElement.innerHTML += '<br>❌ API Error ' + imageIndex + ': ' + response.status;
                 throw new Error(`Replicate API error: ${response.status}`);
             }
             
             const prediction = await response.json();
             console.log(`📤 Image ${imageIndex} generation started:`, prediction.id);
+            debugElement.innerHTML += '<br>✅ API Success ' + imageIndex + ': ' + prediction.id;
             
             // Poll for completion
             if (window.Utils && window.Utils.pollReplicatePrediction) {
@@ -489,6 +529,9 @@ async function extractAndGenerateImages(content, postTitle) {
             console.error('Error generating image for:', description);
             console.error('🔍 Debug - Full error details:', error);
             console.error('🔍 Debug - Error stack:', error.stack);
+            
+            debugElement.innerHTML += '<br>💥 CATCH ERROR ' + imageIndex + ': ' + error.message;
+            
             // Remove placeholder if image generation failed
             updatedContent = updatedContent.replace(placeholder, '');
         }

@@ -750,6 +750,9 @@ async function getRecipeImage(searchTerm) {
             return null;
         }
         
+        console.log('🔑 Found Replicate API key (length):', replicateApiKey.length);
+        console.log('🔑 API key starts with:', replicateApiKey.substring(0, 8) + '...');
+        
         // Create professional food photography prompt
         const enhancedPrompt = `Professional food photography of ${searchTerm}, beautiful plating, natural lighting, top-down view, vibrant colors, 4k detail, photorealistic, mouth-watering, restaurant quality presentation, crisp details, textured surface`;
         

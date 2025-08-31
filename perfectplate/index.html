@@ -1289,6 +1289,27 @@
 
             try {
                 console.log('🧪 Testing Replicate API key...');
+                console.log('🔑 API Key (first 10 chars):', apiKey.substring(0, 10) + '...');
+                
+                // First try a simple GET request to check authentication
+                console.log('📡 Testing authentication with GET /v1/predictions...');
+                const authTest = await fetch('https://api.replicate.com/v1/predictions?page_size=1', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Token ${apiKey}`
+                    }
+                });
+
+                console.log('📊 Auth test response status:', authTest.status);
+                
+                if (!authTest.ok) {
+                    const authErrorText = await authTest.text();
+                    console.error('❌ Authentication failed:', authErrorText);
+                    alert(`❌ API key authentication failed: ${authTest.status}\n\nError: ${authErrorText}\n\nPlease check:\n1. API key is correct\n2. API key has proper permissions\n3. Account is active`);
+                    return;
+                }
+
+                console.log('✅ Authentication successful! Now testing prediction creation...');
                 
                 const response = await fetch('https://api.replicate.com/v1/predictions', {
                     method: 'POST',
@@ -1300,23 +1321,45 @@
                         version: "131d9e185621b4b4d349fd262e363420a6f74081d8c27966c9c5bcf120fa3985",
                         input: {
                             prompt: "test image of a red apple",
-                            num_outputs: 1
+                            num_outputs: 1,
+                            aspect_ratio: "1:1"
                         }
                     })
                 });
 
+                console.log('📊 Prediction creation response status:', response.status);
+
                 if (response.ok) {
                     const result = await response.json();
-                    console.log('✅ Replicate API key is valid!', result);
-                    alert('✅ Replicate API key is working! Prediction ID: ' + result.id);
+                    console.log('✅ Replicate API key is working perfectly!', result);
+                    alert('✅ Replicate API key is working!\n\nPrediction ID: ' + result.id + '\nStatus: ' + result.status + '\n\nYour API key is ready for image generation!');
                 } else {
                     const errorText = await response.text();
-                    console.error('❌ Replicate API Error:', errorText);
-                    alert('❌ API key test failed: ' + response.status + ' - ' + errorText);
+                    console.error('❌ Prediction creation failed:', errorText);
+                    alert(`❌ Prediction creation failed: ${response.status}\n\nError: ${errorText}\n\nThe API key works for authentication but failed to create a prediction.`);
                 }
             } catch (error) {
                 console.error('❌ Test error:', error);
-                alert('❌ Test failed: ' + error.message);
+                if (error.message.includes('Failed to fetch') || error.message.includes('CORS') || error.message.includes('network')) {
+                    alert(`❌ Network/CORS Error: ${error.message}
+
+This is likely a browser security restriction. Here are solutions:
+
+🔧 IMMEDIATE FIXES:
+1. Try a different browser (Chrome, Firefox, Edge)
+2. Use incognito/private mode
+3. Disable browser extensions temporarily
+
+🔧 IF STILL FAILING:
+The API key might still work for actual image generation even if the test fails.
+Try generating a recipe with images to see if it works.
+
+🔧 TECHNICAL SOLUTION:
+This happens because browsers block direct API calls from localhost.
+The actual image generation might work because it's called differently.`);
+                } else {
+                    alert('❌ Test failed: ' + error.message + '\n\nCheck browser console (F12) for more details.');
+                }
             }
         }
     </script>

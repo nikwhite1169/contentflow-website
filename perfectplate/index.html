@@ -27,6 +27,189 @@
             overflow: hidden;
         }
 
+        /* Mobile-first responsive design */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                max-width: 100%;
+                margin: 0;
+                border-radius: 10px;
+                box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            }
+            
+            .header {
+                padding: 20px 15px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .tab-container {
+                flex-wrap: wrap;
+            }
+            
+            .tab-button {
+                font-size: 0.9em;
+                padding: 15px 10px;
+            }
+            
+            /* Blog preview mobile improvements */
+            .blog-preview {
+                padding: 15px !important;
+                margin-top: 15px !important;
+                border-radius: 8px !important;
+            }
+            
+            .blog-preview .content {
+                font-size: 16px !important;
+                line-height: 1.8 !important;
+                text-align: left !important;
+            }
+            
+            .blog-preview .content p {
+                margin-bottom: 20px !important;
+                text-align: left !important;
+            }
+            
+            .blog-preview .content img {
+                width: 100% !important;
+                height: auto !important;
+                max-width: none !important;
+                margin: 15px 0 !important;
+                border-radius: 8px !important;
+            }
+            
+            .blog-preview h1, .blog-preview h2, .blog-preview h3 {
+                text-align: left !important;
+                margin-bottom: 15px !important;
+                font-size: 1.4em !important;
+            }
+            
+            .blog-preview ul, .blog-preview ol {
+                padding-left: 20px !important;
+                margin-bottom: 20px !important;
+            }
+            
+            .blog-preview li {
+                margin-bottom: 8px !important;
+                line-height: 1.6 !important;
+            }
+            
+            /* Image container mobile improvements */
+            .image-container {
+                margin: 20px 0 !important;
+            }
+            
+            .image-container img {
+                width: 100% !important;
+                height: auto !important;
+                border-radius: 8px !important;
+            }
+            
+            .regenerate-btn {
+                font-size: 11px !important;
+                padding: 6px 10px !important;
+            }
+            
+            /* Template section mobile improvements */
+            .tab-content {
+                padding: 15px !important;
+            }
+            
+            .template-grid {
+                grid-template-columns: 1fr !important;
+                gap: 15px !important;
+            }
+            
+            .template-card {
+                padding: 15px !important;
+                margin: 0 !important;
+            }
+            
+            .template-card h3 {
+                font-size: 1.1em !important;
+            }
+            
+            .template-card p {
+                font-size: 0.9em !important;
+                line-height: 1.5 !important;
+            }
+            
+            /* Form improvements */
+            .form-group {
+                margin-bottom: 15px !important;
+            }
+            
+            .form-group label {
+                font-size: 14px !important;
+                margin-bottom: 5px !important;
+            }
+            
+            .form-group input, .form-group textarea, .form-group select {
+                font-size: 16px !important;
+                padding: 12px !important;
+                border-radius: 6px !important;
+            }
+            
+            .btn {
+                font-size: 16px !important;
+                padding: 12px 20px !important;
+                width: 100% !important;
+                margin-bottom: 10px !important;
+            }
+            
+            /* Publish section mobile improvements */
+            .publish-section {
+                padding: 15px !important;
+                margin-top: 15px !important;
+            }
+            
+            .blog-actions {
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 10px !important;
+            }
+            
+            .blog-actions .btn {
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 15px !important;
+                font-size: 16px !important;
+                border-radius: 8px !important;
+            }
+            
+            .publish-to-website {
+                background: #4CAF50 !important;
+                color: white !important;
+            }
+            
+            .generate-tiktok {
+                background: #ff4757 !important;
+                color: white !important;
+            }
+            
+            /* Template actions mobile improvements */
+            .template-actions {
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 10px !important;
+                align-items: center !important;
+                margin-top: 20px !important;
+            }
+            
+            .template-actions .btn {
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 15px !important;
+                font-size: 16px !important;
+                border-radius: 8px !important;
+            }
+        }
+
         .header {
             background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
             color: white;
@@ -1127,7 +1310,7 @@
                         <button class="btn" onclick="regenerateCurrentTemplate()" style="background: #17a2b8; margin-top: 20px;">
                             🔄 Generate New Ideas for Selected Category
                         </button>
-                        <button class="btn" onclick="toggleSavedRecipes()" style="background: #28a745; margin-top: 20px; margin-left: 10px;">
+                        <button class="btn" onclick="toggleSavedRecipes()" style="background: #28a745; margin-top: 20px;">
                             📚 View Saved Recipes
                         </button>
                     </div>
@@ -1155,14 +1338,14 @@
                         <div class="form-group">
                             <label for="blogCategory">Category:</label>
                             <select id="blogCategory">
-                                <option value="Getting Started">Getting Started</option>
-                                <option value="Meal Planning">Meal Planning</option>
-                                <option value="Dietary Tips">Dietary Tips</option>
-                                <option value="Restaurant Guides">Restaurant Guides</option>
-                                <option value="App Features">App Features</option>
-                                <option value="Nutrition">Nutrition</option>
-                                <option value="Recipes">Recipes</option>
-                                <option value="Tips & Tricks">Tips & Tricks</option>
+                                <option value="getting-started">Getting Started</option>
+                                <option value="meal-planning">Meal Planning</option>
+                                <option value="dietary-tips">Dietary Tips</option>
+                                <option value="restaurant-guides">Restaurant Guides</option>
+                                <option value="app-features">App Features</option>
+                                <option value="nutrition">Nutrition</option>
+                                <option value="recipes">Recipes</option>
+                                <option value="tips-tricks">Tips & Tricks</option>
                             </select>
                         </div>
 

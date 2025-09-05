@@ -164,24 +164,33 @@ async function regenerateCurrentRecipeDiet() {
         return;
     }
     
-    // Show loading message
+    // Show loading message below the Generate New Ideas button
     const loadingMsg = document.createElement('div');
     loadingMsg.className = 'loading-message';
     loadingMsg.innerHTML = `⏳ AI is generating ${recipeDietCategories[selectedRecipeDiet].name} recipe ideas... Please wait.`;
     loadingMsg.style.cssText = `
-        background: #fff3cd; 
-        border: 1px solid #ffeaa7; 
-        color: #856404; 
-        padding: 15px; 
-        border-radius: 8px; 
-        margin: 20px 0; 
-        text-align: center;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+        color: white; 
+        padding: 15px 20px; 
+        border-radius: 12px; 
+        margin: 15px 0; 
+        font-weight: 500;
         display: block;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        text-align: center;
+        font-size: 14px;
     `;
     
-    const templateSection = document.querySelector('.template-section');
-    if (templateSection) {
-        templateSection.appendChild(loadingMsg);
+    // Find the template-actions div (contains the Generate New Ideas button) and insert after it
+    const templateActions = document.querySelector('.template-actions');
+    if (templateActions) {
+        templateActions.insertAdjacentElement('afterend', loadingMsg);
+    } else {
+        // Fallback to template section if template-actions not found
+        const templateSection = document.querySelector('.template-section');
+        if (templateSection) {
+            templateSection.appendChild(loadingMsg);
+        }
     }
     
     try {
@@ -220,6 +229,7 @@ async function regenerateCurrentRecipeDiet() {
             }
             
             // Add message to template section
+            const templateSection = document.querySelector('.template-section');
             if (templateSection) {
                 templateSection.appendChild(successMessage);
             }
@@ -408,7 +418,7 @@ OUTLINE: <outline text>
         
         return {
             title,
-            category: 'Recipes', // Capitalized to match dropdown option
+            category: 'recipes', // Lowercase to match posts.json categories
             keywords,
             tone: 'friendly',
             length: 'medium',
@@ -696,7 +706,7 @@ Generate a creative, flavorful recipe now:`;
         
         return {
             title,
-            category: 'Recipes', // Capitalized to match dropdown option
+            category: 'recipes', // Lowercase to match posts.json categories
             keywords,
             tone: 'friendly',
             length: 'medium',

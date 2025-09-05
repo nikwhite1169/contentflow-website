@@ -4,82 +4,82 @@
 let currentTemplateId = null;
 let currentBlogPost = null;
 
-// Valid frontend blog categories - MUST match frontend filter buttons exactly
+// Valid frontend blog categories - MUST match posts.json categories exactly
 const VALID_CATEGORIES = [
-    'Getting Started',
-    'Meal Planning', 
-    'Dietary Tips',
-    'Restaurant Guides',
-    'App Features',
-    'Nutrition',
-    'Recipes',
-    'Tips & Tricks'
+    'getting-started',
+    'meal-planning', 
+    'dietary-tips',
+    'restaurant-guides',
+    'app-features',
+    'nutrition',
+    'recipes',
+    'tips-tricks'
 ];
 
 // Blog template categories
 const blogCategories = {
     'keto-guide': {
-        category: 'Dietary Tips',
+        category: 'dietary-tips',
         baseKeywords: ['keto', 'ketogenic', 'low carb', 'restaurant', 'dining'],
         tone: 'friendly',
         length: 'long'
     },
     'vegan-options': {
-        category: 'Dietary Tips',
+        category: 'dietary-tips',
         baseKeywords: ['vegan', 'plant-based', 'vegetarian', 'restaurant', 'dining'],
         tone: 'friendly',
         length: 'medium'
     },
     'paleo-guide': {
-        category: 'Dietary Tips',
+        category: 'dietary-tips',
         baseKeywords: ['paleo', 'paleolithic', 'whole foods', 'restaurant', 'dining', 'grain-free'],
         tone: 'friendly',
         length: 'long'
     },
     'recipes': {
-        category: 'Recipes', // Capitalized to match dropdown option
+        category: 'recipes', // Lowercase to match posts.json categories
         baseKeywords: ['recipe', 'cooking', 'homemade', 'healthy', 'diet-specific'],
         tone: 'friendly',
         length: 'medium'
     },
     'macro-tracking': {
-        category: 'Nutrition',
+        category: 'nutrition',
         baseKeywords: ['macro tracking', 'protein', 'fitness dining', 'bodybuilding', 'muscle building'],
         tone: 'informative',
         length: 'long'
     },
     'diabetic-friendly': {
-        category: 'Nutrition',
+        category: 'nutrition',
         baseKeywords: ['diabetic friendly', 'blood sugar', 'diabetes', 'low glycemic', 'healthy dining'],
         tone: 'professional',
         length: 'long'
     },
     'getting-started': {
-        category: 'Getting Started',
+        category: 'getting-started',
         baseKeywords: ['beginners guide', 'getting started', 'first time', 'introduction', 'basics'],
         tone: 'friendly',
         length: 'medium'
     },
     'meal-planning': {
-        category: 'Meal Planning',
+        category: 'meal-planning',
         baseKeywords: ['meal planning', 'weekly planning', 'meal prep', 'dining strategy', 'restaurant planning'],
         tone: 'informative',
         length: 'medium'
     },
     'restaurant-guides': {
-        category: 'Restaurant Guides',
+        category: 'restaurant-guides',
         baseKeywords: ['restaurant guide', 'dining guide', 'restaurant reviews', 'best restaurants', 'where to eat'],
         tone: 'informative',
         length: 'long'
     },
     'app-features': {
-        category: 'App Features',
+        category: 'app-features',
         baseKeywords: ['app features', 'PerfectPlate features', 'how to use', 'app guide', 'mobile app'],
         tone: 'friendly',
         length: 'medium'
     },
     'tips-tricks': {
-        category: 'Tips & Tricks',
+        category: 'tips-tricks',
         baseKeywords: ['dining tips', 'restaurant tips', 'food tips', 'eating tips', 'tricks'],
         tone: 'friendly',
         length: 'short'

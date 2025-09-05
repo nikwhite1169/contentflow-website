@@ -515,10 +515,15 @@ async function extractAndGenerateImages(content, postTitle) {
                         
                         // For preview: Use original Replicate URL so images display immediately
                         // For download: HTML will be updated to use local paths
-                        const imageTag = `<img src="${imageUrl}" alt="${description}" style="width: 100%; border-radius: 10px; margin: 20px 0;" data-local-src="${assetPath}${localImageName}">`;
+                        const imageTag = `
+                            <div class="image-container" style="position: relative; margin: 20px 0;">
+                                <img src="${imageUrl}" alt="${description}" style="width: 100%; border-radius: 10px;" data-local-src="${assetPath}${localImageName}" data-image-description="${description}" data-image-index="${imageIndex}">
+                                <button onclick="regenerateImage(${imageIndex}, '${description.replace(/'/g, "\\'")}', this)" class="regenerate-btn" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; z-index: 10; transition: all 0.2s ease; opacity: 0.8;" onmouseover="this.style.opacity='1'; this.style.background='rgba(0,0,0,0.9)'" onmouseout="this.style.opacity='0.8'; this.style.background='rgba(0,0,0,0.7)'">
+                                    🔄 Regenerate
+                                </button>
+                            </div>`;
                         
-                        console.log(`🔄 Replacing placeholder "${placeholder.substring(0, 50)}..." with image tag`);
-                        console.log(`🔄 Image tag: ${imageTag.substring(0, 100)}...`);
+                        console.log(`🔄 Replacing placeholder "${placeholder.substring(0, 50)}..." with image container`);
                         
                         updatedContent = updatedContent.replace(placeholder, imageTag);
                         
@@ -597,6 +602,133 @@ function downloadRecipeImage(index) {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
+    }
+}
+
+// Global function for regenerating individual images
+async function regenerateImage(imageIndex, description, buttonElement) {
+    console.log(`🔄 Regenerating image ${imageIndex}: ${description}`);
+    
+    // Update button to show loading state
+    const originalText = buttonElement.textContent;
+    buttonElement.textContent = '⏳ Generating...';
+    buttonElement.disabled = true;
+    buttonElement.style.background = 'rgba(255,165,0,0.8)';
+    
+    try {
+        // Get API key
+        const replicateApiKey = document.getElementById('replicateApiKey')?.value;
+        if (!replicateApiKey) {
+            throw new Error('Replicate API key not found');
+        }
+        
+        // Create progress indicator
+        const progressElement = document.createElement('div');
+        progressElement.style.cssText = 'position: fixed; top: 20px; right: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 20px; z-index: 9999; border-radius: 12px; max-width: 320px; font-size: 13px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); backdrop-filter: blur(10px);';
+        progressElement.innerHTML = `🎨 <strong>Regenerating Image ${imageIndex}</strong><br><small>${description.substring(0, 40)}...</small>`;
+        document.body.appendChild(progressElement);
+        
+        // Call Replicate API
+        const backendUrl = 'https://perfectplate-backend.onrender.com';
+        const response = await fetch(`${backendUrl}/api/replicate/predictions`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                apiKey: replicateApiKey,
+                version: "39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b",
+                input: {
+                    prompt: description,
+                    width: 1024,
+                    height: 768,
+                    num_outputs: 1,
+                    scheduler: "K_EULER",
+                    num_inference_steps: 50,
+                    guidance_scale: 7.5,
+                    quality: 95
+                }
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`API error: ${response.status}`);
+        }
+        
+        const prediction = await response.json();
+        console.log(`📤 Image ${imageIndex} regeneration started:`, prediction.id);
+        
+        // Poll for completion
+        progressElement.innerHTML = `⏳ <strong>Processing Image ${imageIndex}</strong><br><small>Waiting for AI to finish...</small>`;
+        
+        const result = await window.Utils.pollReplicatePrediction(prediction.id, replicateApiKey);
+        
+        if (result && result.length > 0) {
+            const newImageUrl = result[0];
+            console.log(`✅ Image ${imageIndex} regenerated:`, newImageUrl);
+            
+            // Update the image in the preview
+            const imgElement = buttonElement.parentElement.querySelector('img');
+            if (imgElement) {
+                imgElement.src = newImageUrl;
+                
+                // Update the stored image data
+                if (window.currentPostImages && window.currentPostImages[imageIndex - 1]) {
+                    // Download new image and update stored data
+                    try {
+                        const imageResponse = await fetch(newImageUrl);
+                        const blob = await imageResponse.blob();
+                        
+                        window.currentPostImages[imageIndex - 1] = {
+                            ...window.currentPostImages[imageIndex - 1],
+                            url: newImageUrl,
+                            blob: blob
+                        };
+                        
+                        console.log(`✅ Updated stored image data for image ${imageIndex}`);
+                    } catch (downloadError) {
+                        console.warn('Failed to download regenerated image for storage:', downloadError);
+                    }
+                }
+                
+                // Update the blog content with new image URL
+                if (window.generatedBlogContent) {
+                    window.generatedBlogContent.content = window.generatedBlogContent.content.replace(
+                        imgElement.getAttribute('data-original-src') || imgElement.src,
+                        newImageUrl
+                    );
+                }
+            }
+            
+            progressElement.innerHTML = `🎉 <strong>Image ${imageIndex} Complete!</strong><br><small>Successfully regenerated</small>`;
+            setTimeout(() => {
+                if (progressElement.parentNode) {
+                    progressElement.remove();
+                }
+            }, 3000);
+            
+        } else {
+            throw new Error('No image generated');
+        }
+        
+    } catch (error) {
+        console.error('Error regenerating image:', error);
+        
+        // Show error in progress indicator
+        const progressElement = document.querySelector('[style*="position: fixed"][style*="top: 20px"][style*="right: 20px"]');
+        if (progressElement) {
+            progressElement.innerHTML = `❌ <strong>Regeneration Failed</strong><br><small>${error.message}</small>`;
+            setTimeout(() => {
+                if (progressElement.parentNode) {
+                    progressElement.remove();
+                }
+            }, 5000);
+        }
+    } finally {
+        // Restore button state
+        buttonElement.textContent = originalText;
+        buttonElement.disabled = false;
+        buttonElement.style.background = 'rgba(0,0,0,0.7)';
     }
 }
 

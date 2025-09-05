@@ -850,13 +850,14 @@ async function publishBlogPost() {
             background: #28a745;
             color: white;
             border: none;
-            padding: 8px 16px;
+            padding: 12px 24px;
             border-radius: 5px;
             cursor: pointer;
-            margin-top: 10px;
-            font-size: 12px;
+            margin-top: 15px;
+            font-size: 14px;
             font-weight: bold;
-            margin-right: 10px;
+            width: 100%;
+            display: block;
         `;
         copyJsonButton.onclick = () => {
             const jsonText = JSON.stringify(newPost, null, 2);
@@ -910,6 +911,8 @@ async function publishBlogPost() {
             margin-top: 15px;
             font-size: 14px;
             font-weight: bold;
+            width: 100%;
+            display: block;
         `;
         downloadButton.onclick = () => {
             if (typeof downloadBlogPost === 'function') {

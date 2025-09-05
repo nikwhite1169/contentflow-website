@@ -139,6 +139,170 @@ const recipeDietCategories = {
     }
 };
 
+// Helper function to get the current formatted date with context
+function getCurrentDateContext() {
+    const today = new Date();
+    const options = { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+    };
+    return today.toLocaleDateString('en-US', options);
+}
+
+// Helper function to get recent recipes for a specific diet to avoid repetition
+function getRecentRecipes(diet) {
+    try {
+        const recentRecipesKey = `recentRecipes_${diet}`;
+        const recentRecipes = JSON.parse(localStorage.getItem(recentRecipesKey) || '[]');
+        // Return only the last 5 recipe titles to avoid making the prompt too long
+        return recentRecipes.slice(-5);
+    } catch (error) {
+        console.error('Error loading recent recipes:', error);
+        return [];
+    }
+}
+
+// Helper function to save a recipe title to recent recipes (only when downloaded)
+function saveRecentRecipe(diet, recipeTitle) {
+    try {
+        const recentRecipesKey = `recentRecipes_${diet}`;
+        let recentRecipes = JSON.parse(localStorage.getItem(recentRecipesKey) || '[]');
+        
+        // Add new recipe to the end
+        recentRecipes.push(recipeTitle);
+        
+        // Keep only the last 10 recipes to prevent storage bloat
+        if (recentRecipes.length > 10) {
+            recentRecipes = recentRecipes.slice(-10);
+        }
+        
+        localStorage.setItem(recentRecipesKey, JSON.stringify(recentRecipes));
+        console.log(`✅ Saved recent recipe for ${diet}:`, recipeTitle);
+    } catch (error) {
+        console.error('Error saving recent recipe:', error);
+    }
+}
+
+// Helper function to detect patterns in recent recipes
+function detectRecentPatterns(recentRecipes) {
+    const patterns = {
+        proteins: [],
+        spices: [],
+        cookingMethods: [],
+        titleStructures: []
+    };
+    
+    recentRecipes.forEach(title => {
+        const lowerTitle = title.toLowerCase();
+        
+        // Detect protein patterns
+        if (lowerTitle.includes('salmon')) patterns.proteins.push('salmon');
+        if (lowerTitle.includes('duck')) patterns.proteins.push('duck');
+        if (lowerTitle.includes('chicken')) patterns.proteins.push('chicken');
+        if (lowerTitle.includes('tofu')) patterns.proteins.push('tofu');
+        if (lowerTitle.includes('beef')) patterns.proteins.push('beef');
+        if (lowerTitle.includes('pork')) patterns.proteins.push('pork');
+        if (lowerTitle.includes('shrimp')) patterns.proteins.push('shrimp');
+        
+        // Detect spice/flavor patterns
+        if (lowerTitle.includes('harissa')) patterns.spices.push('harissa');
+        if (lowerTitle.includes('za\'atar') || lowerTitle.includes('zaatar')) patterns.spices.push('za\'atar');
+        if (lowerTitle.includes('coconut')) patterns.spices.push('coconut');
+        if (lowerTitle.includes('lemon')) patterns.spices.push('lemon');
+        if (lowerTitle.includes('garlic')) patterns.spices.push('garlic');
+        if (lowerTitle.includes('ginger')) patterns.spices.push('ginger');
+        if (lowerTitle.includes('curry')) patterns.spices.push('curry');
+        if (lowerTitle.includes('sesame')) patterns.spices.push('sesame');
+        
+        // Detect cooking method patterns
+        if (lowerTitle.includes('crispy') || lowerTitle.includes('crusted')) patterns.cookingMethods.push('crispy/crusted');
+        if (lowerTitle.includes('glazed')) patterns.cookingMethods.push('glazed');
+        if (lowerTitle.includes('braised')) patterns.cookingMethods.push('braised');
+        if (lowerTitle.includes('roasted')) patterns.cookingMethods.push('roasted');
+        if (lowerTitle.includes('grilled')) patterns.cookingMethods.push('grilled');
+        
+        // Detect side dish patterns
+        if (lowerTitle.includes('asparagus')) patterns.spices.push('asparagus');
+        if (lowerTitle.includes('quinoa')) patterns.spices.push('quinoa');
+        
+        // Detect title structure patterns
+        if (lowerTitle.includes('– a ') || lowerTitle.includes('- a ') || lowerTitle.includes('—a ')) patterns.titleStructures.push('appendage');
+        if (lowerTitle.includes('escape') || lowerTitle.includes('fiesta') || lowerTitle.includes('adventure')) patterns.titleStructures.push('themed-appendage');
+        if (lowerTitle.includes(' with ')) patterns.titleStructures.push('with-structure');
+    });
+    
+    return patterns;
+}
+
+// Helper function to generate pattern-breaking instructions
+function getPatternBreakingInstructions(patterns) {
+    let instructions = [];
+    
+    // Break protein patterns
+    const overusedProteins = [...new Set(patterns.proteins)].filter(protein => 
+        patterns.proteins.filter(p => p === protein).length >= 2
+    );
+    if (overusedProteins.length > 0) {
+        instructions.push(`Avoid repeating ${overusedProteins.join(', ')} - explore different protein sources for variety.`);
+    }
+    
+    // Break spice patterns
+    const overusedSpices = [...new Set(patterns.spices)].filter(spice => 
+        patterns.spices.filter(s => s === spice).length >= 2
+    );
+    if (overusedSpices.length > 0) {
+        instructions.push(`Move away from ${overusedSpices.join(', ')} - experiment with different flavor profiles and spice combinations.`);
+    }
+    
+    // Break cooking method patterns
+    const overusedMethods = [...new Set(patterns.cookingMethods)].filter(method => 
+        patterns.cookingMethods.filter(m => m === method).length >= 2
+    );
+    if (overusedMethods.length > 0) {
+        instructions.push(`Try cooking techniques other than ${overusedMethods.join(', ')} for more variety.`);
+    }
+    
+    // Break title structure patterns
+    if (patterns.titleStructures.includes('appendage') || patterns.titleStructures.includes('themed-appendage')) {
+        instructions.push(`Avoid formulaic title appendages like "– A [Diet] [Word]" or themed endings like "Escape/Fiesta/Adventure". Create clean, standalone titles.`);
+    }
+    
+    if (instructions.length === 0) {
+        instructions.push(`Create something completely unexpected and different from typical recipe patterns.`);
+    }
+    
+    return instructions.join(' ');
+}
+
+// Helper function to provide immediate pattern-breaking for known problematic patterns
+function getImmediatePatternBreaking(diet) {
+    // Provide gentle, balanced guidance without being too specific
+    const complexityOptions = [
+        'simple weeknight meals with 5-6 ingredients',
+        'impressive dishes with multiple components',
+        'one-pan recipes for easy cleanup',
+        'make-ahead friendly preparations',
+        'quick 20-minute dinners',
+        'slow-cooked comfort foods'
+    ];
+    
+    const approachabilityTips = [
+        'Focus on familiar ingredients with a twist',
+        'Balance exotic flavors with accessible techniques',
+        'Consider what home cooks actually have in their pantry',
+        'Think about realistic prep times for busy weeknights',
+        'Include both beginner-friendly and intermediate options'
+    ];
+    
+    // Randomly select one complexity and one approachability tip
+    const randomComplexity = complexityOptions[Math.floor(Math.random() * complexityOptions.length)];
+    const randomApproachability = approachabilityTips[Math.floor(Math.random() * approachabilityTips.length)];
+    
+    return `Vary your approach - try ${randomComplexity}. ${randomApproachability}.`;
+}
+
 // Select recipe diet template (just visual selection, no content generation)
 function selectRecipeDiet(dietId) {
     selectedRecipeDiet = dietId; // Track the current diet
@@ -277,7 +441,21 @@ async function generateRecipeIdeas(diet) {
             throw new Error(`Unknown diet type: ${diet}`);
         }
         
-        const prompt = `Generate a single ${diet} recipe blog post idea with SEO content for the PerfectPlate food app blog. Keep it simple and focused on ONE recipe.
+        // Get recent recipes and pattern-breaking instructions
+        const recentRecipes = getRecentRecipes(diet);
+        const immediateAvoidance = getImmediatePatternBreaking(diet);
+        const currentPatterns = detectRecentPatterns(recentRecipes);
+        
+        let avoidanceInstruction = '';
+        if (recentRecipes.length > 0) {
+            avoidanceInstruction = `\n\n**AVOID REPETITION:** Do NOT create recipes similar to these recent ${diet} recipes: ${recentRecipes.join(', ')}. Create something completely different in terms of main ingredients, cooking methods, and flavor profiles.`;
+        }
+        
+        const patternBreakingInstruction = `\n\n**BREAK PATTERNS:** ${getPatternBreakingInstructions(currentPatterns)} ${immediateAvoidance}`;
+        
+        const titleCreativityBoost = `\n\n**TITLE CREATIVITY:** Create titles that are appealing and approachable. Balance creativity with familiarity - make it sound delicious and doable, not intimidating. Avoid formulaic appendages and focus on what makes the dish special.`;
+
+        const prompt = `Generate a single ${diet} recipe blog post idea with SEO content for the PerfectPlate food app blog. Keep it simple and focused on ONE recipe.${avoidanceInstruction}${patternBreakingInstruction}${titleCreativityBoost}
 
 PERFECTPLATE CONTEXT (ACCURATE FEATURES ONLY):
 PerfectPlate is a restaurant discovery app with these EXACT features:
@@ -310,11 +488,28 @@ DIET: ${dietInfo.name} (${dietInfo.description})
 
 Create an inspiring blog post idea for ONE creative ${diet} recipe. Think beyond basic dishes - create something that will excite readers and make them want to cook immediately.
 
-TITLE INSPIRATION (create varied, enticing titles):
-- Mix up your approach: technique-focused, flavor-focused, benefit-focused, or story-driven
-- Use evocative, appetizing language that makes people want to cook
-- Avoid repetitive patterns like "Recipe Name: A Diet Word" every single time
-- Think like a food blogger creating click-worthy titles that vary in style
+TITLE CREATIVITY GUIDELINES (STRICT RULES):
+Your primary goal is MAXIMUM VARIETY and CREATIVITY in the titles.
+
+**RULES - WHAT NOT TO DO:**
+1.  **NO COLONS:** Absolutely NO colons (:) in the title.
+2.  **NO SUBTITLES:** Do not use a "Main Title: Subtitle" format.
+3.  **NO FORMULAIC PATTERNS:** Avoid generic patterns like "Recipe Name: A [Diet] Word".
+
+**NEGATIVE EXAMPLES (DO NOT COPY THESE):**
+- ❌ BAD: "Spicy Salmon: A Paleo Delight"
+- ❌ BAD: "Keto Chicken: A Low-Carb Powerhouse"
+- ❌ BAD: "Vegan Curry: A Plant-Based Dream"
+
+**INSPIRATION - WHAT TO DO:**
+Instead, create engaging, natural-sounding titles. Think like a top food blogger and focus on a unique angle for each title.
+
+**GOOD TITLE EXAMPLES (EMULATE THESE STYLES):**
+- ✅ **Focus on Technique:** "The Secret to Perfectly Seared Scallops"
+- ✅ **Focus on Flavor:** "Smoky Paprika & Lime Chicken Skewers"
+- ✅ **Focus on Feeling/Benefit:** "Cozy Autumn Squash Soup for Chilly Nights"
+- ✅ **Focus on Speed:** "20-Minute Lemon Herb Tilapia"
+- ✅ **Focus on Intrigue:** "The Italian Dish That Changed My Mind About Zucchini"
 
 RECIPE INSPIRATION TYPES (choose one approach):
 - Quick 20-minute ${diet} weeknight dinner
@@ -328,11 +523,6 @@ RECIPE INSPIRATION TYPES (choose one approach):
 - Traditional ${diet} recipe with modern presentation
 - Creative use of trending ${diet} ingredients
 
-TITLE APPROACH:
-- Create varied, enticing blog titles that make people excited to cook
-- Mix up your style: sometimes technique ("The Secret to..."), sometimes flavor ("Bold Spicy..."), sometimes benefit ("Quick 20-Minute..."), sometimes story ("Why This Recipe...")
-- Avoid repetitive colon patterns and subtitle formats
-
 RECIPE SHOULD FEATURE:
 - Interesting cooking techniques or flavor combinations (appropriate for skill level)
 - 4-12 ingredients depending on complexity (more for advanced, fewer for quick meals)
@@ -341,7 +531,7 @@ RECIPE SHOULD FEATURE:
 - Instagram-worthy presentation potential
 
 Format your response as:
-TITLE: [Varied, enticing title - mix up your approach each time]
+TITLE: [A creative, varied, and natural-sounding title. NO colons. NO subtitles.]
 KEYWORDS: [8-10 specific SEO keywords including cooking techniques, ingredients, and ${diet} terms]
 OUTLINE: [Detailed outline covering: recipe story/inspiration, ingredient spotlight, step-by-step cooking method breakdown, chef's tips for perfection, nutritional analysis for ${diet}, styling and serving suggestions, and subtle mention of PerfectPlate's custom recipe features when relevant]
 
@@ -357,15 +547,22 @@ Create something delicious and inspiring - avoid basic sheet pan or one-pot reci
                     parts: [{
                         text: `${prompt}
 
-After creating your recipe content, generate an enticing blog title that will make readers excited to try this recipe. Mix up your approach - sometimes highlight the technique, sometimes the flavors, sometimes the benefits. Avoid using the same "Recipe: A Diet Word" pattern repeatedly.
+After creating your recipe content, generate an enticing blog title that will make readers excited to try this recipe. Your title MUST follow the strict creative guidelines provided.
 
 OUTPUT FORMAT (exactly these 3 lines):
-TITLE: <your natural, appropriate title>
+TITLE: <your creative, natural title - NO colons or subtitles>
 KEYWORDS: <csv keywords>
 OUTLINE: <outline text>
 `
                     }]
-                }]
+                }],
+                generationConfig: {
+                    temperature: 0.95,
+                    topK: 50,
+                    topP: 0.9,
+                    maxOutputTokens: 4096,
+                    candidateCount: 1
+                }
             })
         });
 
@@ -536,6 +733,37 @@ async function generateDynamicRecipeContent(diet) {
         }
 
         // Let AI choose ingredients completely freely - no hardcoded options
+        const currentDate = getCurrentDateContext();
+        
+        // 20% chance for seasonal/holiday focus, 80% chance for general creativity
+        const useSeasonalFocus = Math.random() < 0.2;
+        
+        // Get recent recipes to avoid repetition
+        const recentRecipes = getRecentRecipes(diet);
+        
+        // Add immediate pattern-breaking for known problematic patterns
+        const immediateAvoidance = getImmediatePatternBreaking(diet);
+        
+        // Add aggressive pattern-breaking instructions
+        const currentPatterns = detectRecentPatterns(recentRecipes);
+        let avoidanceInstruction = '';
+        
+        if (recentRecipes.length > 0) {
+            avoidanceInstruction = `\n\n**AVOID REPETITION:** Do NOT create recipes similar to these recent ${diet} recipes: ${recentRecipes.join(', ')}. Create something completely different in terms of main ingredients, cooking methods, and flavor profiles.`;
+        }
+        
+        // Add specific pattern-breaking based on recent trends
+        let patternBreakingInstruction = `\n\n**BREAK PATTERNS:** ${getPatternBreakingInstructions(currentPatterns)} ${immediateAvoidance}`;
+        
+        // Add title creativity boost
+        let titleCreativityBoost = `\n\n**TITLE CREATIVITY:** Create titles that are appealing and approachable. Balance creativity with familiarity - make it sound delicious and doable, not intimidating. Avoid formulaic appendages and focus on what makes the dish special.`;
+        
+        let creativityInstruction = '';
+        if (useSeasonalFocus) {
+            creativityInstruction = `- **TIMELY & SEASONAL FOCUS:** Today's date is **${currentDate}**. Create a recipe that is timely and relevant. Consider upcoming holidays (like Halloween, Thanksgiving, Christmas), recent holidays that just passed, seasonal transitions, or cultural moments. Use ingredients that are fresh and exciting for this specific time of year.`;
+        } else {
+            creativityInstruction = `- **CREATIVE & UNEXPECTED FOCUS:** Create a recipe with a surprising twist or unique fusion of flavors. Think outside the box and avoid predictable combinations. The goal is to create something that feels new and exciting, not just a standard version of a dish.`;
+        }
 
         const prompt = `Create an inspiring and delicious ${diet} recipe that's a ${randomComplexity}. Make it ${randomMethod}.
 
@@ -566,11 +794,15 @@ CREATIVITY GUIDELINES:
 - Make it Instagram-worthy and delicious
 - Avoid generic "sheet pan" or "one-pot" recipes unless specifically interesting
 
-INGREDIENT CREATIVITY:
-- Choose ingredients based on flavor harmony, seasonality, and what creates the most delicious recipe
-- Be creative and surprising - avoid repetitive or predictable combinations
-- Think like a chef creating a signature dish - what ingredients would make this truly special?
-- Consider texture contrasts, color variety, and complementary flavors
+INGREDIENT CREATIVITY (STRICT RULES):
+- **MAXIMUM DIVERSITY:** Your primary goal is to create unique and interesting ingredient combinations.
+${creativityInstruction}
+- **AVOID OVERUSED INGREDIENTS:** Do NOT default to the most common ingredients for a diet. For example, do not automatically use salmon, asparagus, and sweet potato for every Paleo dish.
+- **THINK LIKE A CHEF:**
+  - **Flavor Pairings:** Combine flavors in surprising ways (e.g., spicy and sweet, earthy and bright).
+  - **Texture:** Combine different textures (e.g., creamy, crunchy, tender, crisp).
+  - **Uncommon Options:** Explore less common vegetables, herbs, spices, and proteins that fit the diet.
+- **BE BOLD:** Create a signature dish with a standout ingredient that makes the recipe memorable.
 
 Format:
 TITLE: [Must use one of the 6 approved formats above - NO other patterns allowed]
@@ -600,7 +832,7 @@ ${isEasyRecipe ? '' : '[Include cooking tips and temperature guidelines where re
 
 **Serving Suggestions:** [How to plate and what to serve alongside]
 
-Generate a creative, flavorful recipe now:`;
+Generate a creative, flavorful recipe now:${avoidanceInstruction}${patternBreakingInstruction}${titleCreativityBoost}`;
 
         console.log('Making API request to Gemini...'); // Debug log
 
@@ -614,7 +846,14 @@ Generate a creative, flavorful recipe now:`;
                     parts: [{
                         text: prompt
                     }]
-                }]
+                }],
+                generationConfig: {
+                    temperature: 0.95,
+                    topK: 50,
+                    topP: 0.9,
+                    maxOutputTokens: 4096,
+                    candidateCount: 1
+                }
             })
         });
 
@@ -1435,6 +1674,7 @@ window.RecipeGenerator = {
     loadSavedRecipe,
     deleteSavedRecipe,
     updateSavedRecipesUI,
+    saveRecentRecipe,
     selectedRecipeDiet,
     recipeDietCategories
 };

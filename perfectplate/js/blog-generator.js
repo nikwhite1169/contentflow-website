@@ -1297,6 +1297,11 @@ function downloadBlogPost() {
         alert('No blog post to download!');
         return;
     }
+    
+    // Track this recipe to avoid repetition in future generations
+    if (window.generatedBlogContent.category === 'recipes' && window.RecipeGenerator?.selectedRecipeDiet) {
+        window.RecipeGenerator.saveRecentRecipe(window.RecipeGenerator.selectedRecipeDiet, window.generatedBlogContent.title);
+    }
 
     const { title, category, keywords, date, displayDate, shareText } = window.generatedBlogContent;
     let content = window.generatedBlogContent.content;
@@ -2256,13 +2261,14 @@ async function publishBlogPost() {
             background: #28a745;
             color: white;
             border: none;
-            padding: 8px 16px;
+            padding: 12px 24px;
             border-radius: 5px;
             cursor: pointer;
-            margin-top: 10px;
-            font-size: 12px;
+            margin-top: 15px;
+            font-size: 14px;
             font-weight: bold;
-            margin-right: 10px;
+            width: 100%;
+            display: block;
         `;
         copyJsonButton.onclick = () => {
             const jsonText = JSON.stringify(newPost, null, 2);
@@ -2311,6 +2317,8 @@ async function publishBlogPost() {
             margin-top: 15px;
             font-size: 14px;
             font-weight: bold;
+            width: 100%;
+            display: block;
         `;
         downloadButton.onclick = () => {
             // Store original state

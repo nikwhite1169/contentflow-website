@@ -1291,6 +1291,42 @@ function getTwitterImageTag() {
     <meta name="twitter:image:alt" content="PerfectPlate Logo">`;
 }
 
+// Helper function to clean content for download (remove regenerate buttons and UI elements)
+function cleanContentForDownload(content) {
+    console.log('🧹 Cleaning content for download - removing regenerate buttons and UI elements');
+    
+    // Remove regenerate buttons and their containers
+    content = content.replace(/<button[^>]*regenerate[^>]*>.*?<\/button>/gi, '');
+    content = content.replace(/<button[^>]*🔄.*?<\/button>/gi, '');
+    
+    // Remove image containers with regenerate functionality, keep just the img tags
+    content = content.replace(/<div class="image-container"[^>]*>(.*?)<\/div>/gs, (match, innerContent) => {
+        // Extract just the img tag from the container
+        const imgMatch = innerContent.match(/<img[^>]*>/);
+        return imgMatch ? imgMatch[0] : '';
+    });
+    
+    // Clean up any onclick handlers for regeneration
+    content = content.replace(/onclick="regenerateImage[^"]*"/gi, '');
+    
+    // Remove any data attributes used for regeneration
+    content = content.replace(/data-image-index="[^"]*"/gi, '');
+    content = content.replace(/data-image-description="[^"]*"/gi, '');
+    content = content.replace(/data-local-src="[^"]*"/gi, '');
+    
+    // Clean up any remaining regeneration-related attributes
+    content = content.replace(/onmouseover="[^"]*regenerate[^"]*"/gi, '');
+    content = content.replace(/onmouseout="[^"]*regenerate[^"]*"/gi, '');
+    
+    // Remove any z-index and positioning styles that were for the regenerate buttons
+    content = content.replace(/style="[^"]*z-index:\s*\d+[^"]*"/gi, (match) => {
+        return match.replace(/z-index:\s*\d+;?\s*/gi, '').replace(/position:\s*relative;?\s*/gi, '');
+    });
+    
+    console.log('✅ Content cleaned for download');
+    return content;
+}
+
 // Download blog post as HTML file (missing from original modularization)
 function downloadBlogPost() {
     if (!window.generatedBlogContent) {
@@ -1307,6 +1343,9 @@ function downloadBlogPost() {
     let content = window.generatedBlogContent.content;
     
     console.log('🔍 DOWNLOAD DEBUG - Starting download process');
+    
+    // Clean up regenerate buttons from content before download
+    content = cleanContentForDownload(content);
     console.log('🎯 DOWNLOAD DEBUG - Share text available:', !!shareText);
     console.log('🎯 DOWNLOAD DEBUG - Share text preview:', shareText ? shareText.facebookFeed : 'No share text');
     console.log('🔍 DOWNLOAD DEBUG - Content has replicate URLs:', content.includes('replicate.delivery'));
@@ -1654,7 +1693,9 @@ function downloadBlogPost() {
             
             <div class="header-content">
                 <div class="logo-container">
-                    <img src="../images/logo.png" alt="PerfectPlate Logo" class="logo" />
+                    <a href="../index.html">
+                        <img src="../images/logo.png" alt="PerfectPlate Logo" class="logo" />
+                    </a>
                 </div>
                 <div class="header-top">
                     <h1>PerfectPlate</h1>
@@ -2215,7 +2256,10 @@ async function publishBlogPost() {
             published: true,
             filename: filename + '.html',
             keywords: keywords.split(',').map(k => k.trim()).filter(k => k),
-            readTime: readTime
+            readTime: readTime,
+            image: imageData.images && imageData.images.length > 0 
+                ? `../assets/${filename}-1.jpg` 
+                : `../images/logo.png`
         };
 
         // Show success message with instructions

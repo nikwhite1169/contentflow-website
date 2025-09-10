@@ -796,7 +796,10 @@ async function publishBlogPost() {
             published: true,
             filename: filename + '.html',
             keywords: keywords.split(',').map(k => k.trim()).filter(k => k),
-            readTime: readTime
+            readTime: readTime,
+            image: window.currentPostImages && window.currentPostImages.length > 0 
+                ? `../assets/${filename}-1.jpg` 
+                : `../images/logo.png`
         };
 
         // Show success message with detailed instructions

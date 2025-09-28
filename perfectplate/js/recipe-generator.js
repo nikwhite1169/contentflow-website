@@ -44,7 +44,7 @@ Format as JSON:
   "messenger": "message here"
 }`;
 
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -537,7 +537,7 @@ OUTLINE: [Detailed outline covering: recipe story/inspiration, ingredient spotli
 
 Create something delicious and inspiring - avoid basic sheet pan or one-pot recipes unless they have a unique twist. Write in an engaging, food-focused tone.`;
         
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
